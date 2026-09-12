@@ -2,7 +2,7 @@
 	"format_version": "1.10.0",
 	"minecraft:attachable": {
 		"description": {
-			"identifier": "zirconx:skin",
+			"identifier": "zxskin:skin",
 			"materials": {
 				"default": "entity_alphatest"
 			},

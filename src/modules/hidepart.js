@@ -239,7 +239,7 @@ export class HidePartEditor {
 
     const a = document.createElement('a');
     a.href = this.currentSkinBlobUrl;
-    a.download = 'magicskin_custompart.png';
+    a.download = 'zxskin_custompart.png';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

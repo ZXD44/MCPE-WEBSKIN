@@ -440,8 +440,8 @@ export class WardrobeMultiEditor {
 
       // Load base templates from /templates/
       const templateFiles = [
-        'ZirconX-SKIN_BP/items/magicskin.json',
-        'ZirconX-SKIN_RP/attachables/magicskin.json',
+        'ZirconX-SKIN_BP/items/zxskin.json',
+        'ZirconX-SKIN_RP/attachables/zxskin.json',
         'ZirconX-SKIN_RP/materials/entity.material',
         'ZirconX-SKIN_RP/textures/items/skin_item.png',
         'ZirconX-SKIN_RP/textures/item_texture.json',
@@ -483,14 +483,14 @@ let playerData = ${JSON.stringify(sanitizedPlayerData, null, 2)};
 
 world.beforeEvents.itemUse.subscribe(event => {
     let source = event.source;
-    if (event.itemStack.typeId === "zirconx:skin" || event.itemStack.typeId === "magiclab:skin") {
+    if (event.itemStack.typeId === "zxskin:skin" || event.itemStack.typeId === "zirconx:skin" || event.itemStack.typeId === "magiclab:skin") {
         system.run(() => titleScreen(source));
     }
 
     function titleScreen(player) {
         const wardrobeData = playerData.filter(e => e.allowUsername.includes(player.name));
         const form = new MessageFormData()
-            .title("ZirconX Skin")
+            .title("ZXSkin")
             .body("ระบบเปลี่ยนเสื้อผ้ารูปแบบใหม่ใน §l§aMinecraft Bedrock§r รองรับเวอร์ชันล่าสุด")
             .button1(wardrobeData.length > 0 ? "เลือกตู้เสื้อผ้า" : "§4ไม่พบตู้เสื้อผ้าของคุณในระบบ")
             .button2("เสื้อผ้าเริ่มต้น");
@@ -718,7 +718,7 @@ world.beforeEvents.itemUse.subscribe(event => {
 
       // Generate & save
       const blob = await zip.generateAsync({ type: 'blob' });
-      saveAs(blob, `zirconx_server_wardrobe_${Date.now()}.mcaddon`);
+      saveAs(blob, `zxskin_server_wardrobe_${Date.now()}.mcaddon`);
       showToast('สร้างและดาวน์โหลดแอดออนเซิร์ฟเวอร์สำเร็จ (.mcaddon)', 'success');
     } catch (err) {
       console.error(err);
