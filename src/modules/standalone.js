@@ -41,11 +41,29 @@ export class StandaloneAddonGenerator {
       this.viewer = new skinview3d.SkinViewer({
         canvas: document.getElementById('standalone-3d-canvas'),
         width: container.clientWidth || 300,
-        height: 320
+        height: 260
       });
+      if (this.viewer.renderer) {
+        this.viewer.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      }
       this.viewer.camera.position.z = 70;
       this.viewer.animation = new skinview3d.WalkingAnimation();
-      this.viewer.animation.speed = 0.6;
+      this.viewer.animation.speed = 0.5;
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (this.viewer && this.viewer.animation) {
+            this.viewer.animation.paused = !entry.isIntersecting;
+          }
+        });
+      }, { threshold: 0.1 });
+      observer.observe(container);
+
+      window.addEventListener('resize', () => {
+        if (this.viewer && container.clientWidth) {
+          this.viewer.width = container.clientWidth;
+        }
+      });
     }
 
     // Version inputs

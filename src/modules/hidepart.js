@@ -24,17 +24,37 @@ export class HidePartEditor {
   }
 
   init() {
-    // Setup 3D viewer
+    // Setup 3D viewer with mobile performance optimization
     const container = document.getElementById('hidepart-3d-container');
     if (container) {
       this.viewer = new skinview3d.SkinViewer({
         canvas: document.getElementById('hidepart-3d-canvas'),
         width: container.clientWidth || 300,
-        height: 320
+        height: 290
       });
+      if (this.viewer.renderer) {
+        this.viewer.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      }
       this.viewer.camera.position.z = 70;
       this.viewer.animation = new skinview3d.WalkingAnimation();
-      this.viewer.animation.speed = 0.6;
+      this.viewer.animation.speed = 0.5;
+
+      // Pause rendering when scrolled out of view to save battery & maintain 60-120fps on mobile
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (this.viewer && this.viewer.animation) {
+            this.viewer.animation.paused = !entry.isIntersecting;
+          }
+        });
+      }, { threshold: 0.1 });
+      observer.observe(container);
+
+      // Handle window resize smoothly
+      window.addEventListener('resize', () => {
+        if (this.viewer && container.clientWidth) {
+          this.viewer.width = container.clientWidth;
+        }
+      });
     }
 
     // Bind file input
