@@ -450,7 +450,7 @@ export class WardrobeMultiEditor {
 
       for (const tPath of templateFiles) {
         try {
-          const resp = await fetch(`/templates/${tPath}`);
+          const resp = await fetch(`${import.meta.env.BASE_URL}templates/${tPath}`);
           const blob = await resp.blob();
           if (tPath === 'packicon.png') {
             zip.file('ZirconX-SKIN_BP/pack_icon.png', blob);

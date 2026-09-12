@@ -463,14 +463,14 @@ export class StandaloneAddonGenerator {
       } else {
         // Fallback default icon
         try {
-          const defaultIcon = await (await fetch('/templates/ZirconX-SKIN_RP/textures/items/skin_item.png')).blob();
+          const defaultIcon = await (await fetch(`${import.meta.env.BASE_URL}templates/ZirconX-SKIN_RP/textures/items/skin_item.png`)).blob();
           zip.file(`${rpFolder}/textures/items/magiclab/${itemId}.png`, defaultIcon);
         } catch (_) {}
       }
 
       // Add pack icon
       try {
-        const packIcon = await (await fetch('/templates/packicon.png')).blob();
+        const packIcon = await (await fetch(`${import.meta.env.BASE_URL}templates/packicon.png`)).blob();
         zip.file(`${bpFolder}/pack_icon.png`, packIcon);
         zip.file(`${rpFolder}/pack_icon.png`, packIcon);
       } catch (_) {}
