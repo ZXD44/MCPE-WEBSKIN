@@ -1,0 +1,15 @@
+{
+	"resource_pack_name": "zxskin",
+	"texture_name": "atlas.items",
+	"texture_data": {
+		"zxskin:skin": {
+			"textures": "textures/items/skin_item"
+		},
+		"zirconx:skin": {
+			"textures": "textures/items/skin_item"
+		},
+		"magiclab:skin": {
+			"textures": "textures/items/skin_item"
+		}
+	}
+}
