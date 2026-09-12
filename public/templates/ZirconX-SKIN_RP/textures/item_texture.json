@@ -1,7 +1,10 @@
 {
-	"resource_pack_name": "magicskin",
+	"resource_pack_name": "zirconx_skin",
 	"texture_name": "atlas.items",
 	"texture_data": {
+		"zirconx:skin": {
+			"textures": "textures/items/skin_item"
+		},
 		"magiclab:skin": {
 			"textures": "textures/items/skin_item"
 		}

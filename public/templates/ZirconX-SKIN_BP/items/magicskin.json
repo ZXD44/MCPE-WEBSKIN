@@ -1,16 +1,16 @@
 {
-	"format_version": "1.20.80",
+	"format_version": "1.21.10",
 	"minecraft:item": {
 		"description": {
-			"identifier": "magiclab:skin",
+			"identifier": "zirconx:skin",
 			"menu_category": {
 				"category": "nature"
 			}
 		},
 		"components": {
-			"minecraft:icon": "magiclab:skin",
+			"minecraft:icon": "zirconx:skin",
 			"minecraft:display_name": {
-				"value": "MagicSkin"
+				"value": "ZirconX Skin"
 			},
 			"minecraft:max_stack_size": 1
 		}

@@ -341,7 +341,7 @@ export class StandaloneAddonGenerator {
         format_version: "1.21.10",
         "minecraft:item": {
           description: {
-            identifier: `magicskin:${itemId}`,
+            identifier: `zirconx:${itemId}`,
             menu_category: {
               category: "equipment",
               group: "itemGroup.name.leggings"
@@ -393,7 +393,7 @@ export class StandaloneAddonGenerator {
         format_version: "1.8.0",
         "minecraft:attachable": {
           description: {
-            identifier: `magicskin:${itemId}`,
+            identifier: `zirconx:${itemId}`,
             materials: {
               default: "armor",
               enchanted: "armor_enchanted"

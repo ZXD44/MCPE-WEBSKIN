@@ -1,8 +1,8 @@
 {
-	"format_version": "1.19.0",
+	"format_version": "1.10.0",
 	"minecraft:attachable": {
 		"description": {
-			"identifier": "magiclab:skin",
+			"identifier": "zirconx:skin",
 			"materials": {
 				"default": "entity_alphatest"
 			},

@@ -483,15 +483,15 @@ let playerData = ${JSON.stringify(sanitizedPlayerData, null, 2)};
 
 world.beforeEvents.itemUse.subscribe(event => {
     let source = event.source;
-    if (event.itemStack.typeId === "magiclab:skin") {
+    if (event.itemStack.typeId === "zirconx:skin" || event.itemStack.typeId === "magiclab:skin") {
         system.run(() => titleScreen(source));
     }
 
     function titleScreen(player) {
         const wardrobeData = playerData.filter(e => e.allowUsername.includes(player.name));
         const form = new MessageFormData()
-            .title("MagicSkin")
-            .body("ระบบเปลี่ยนเสื้อผ้ารูปแบบใหม่ใน §l§aMinecraft Bedrock§r รองรับความละเอียดสูงสุด")
+            .title("ZirconX Skin")
+            .body("ระบบเปลี่ยนเสื้อผ้ารูปแบบใหม่ใน §l§aMinecraft Bedrock§r รองรับเวอร์ชันล่าสุด")
             .button1(wardrobeData.length > 0 ? "เลือกตู้เสื้อผ้า" : "§4ไม่พบตู้เสื้อผ้าของคุณในระบบ")
             .button2("เสื้อผ้าเริ่มต้น");
 
@@ -562,8 +562,8 @@ world.beforeEvents.itemUse.subscribe(event => {
         ],
         dependencies: [
           { uuid: rpUuid, version: this.addonVersion },
-          { module_name: "@minecraft/server", version: "1.13.0" },
-          { module_name: "@minecraft/server-ui", version: "1.2.0" }
+          { module_name: "@minecraft/server", version: "2.1.0" },
+          { module_name: "@minecraft/server-ui", version: "2.0.0" }
         ]
       };
 
@@ -668,7 +668,7 @@ world.beforeEvents.itemUse.subscribe(event => {
       };
 
       const playerEntityBpJson = {
-        format_version: "1.21.30",
+        format_version: "1.21.60",
         "minecraft:entity": {
           description: {
             identifier: "minecraft:player",
