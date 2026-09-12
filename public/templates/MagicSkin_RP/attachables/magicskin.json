@@ -1,0 +1,17 @@
+{
+	"format_version": "1.19.0",
+	"minecraft:attachable": {
+		"description": {
+			"identifier": "magiclab:skin",
+			"materials": {
+				"default": "entity_alphatest"
+			},
+			"textures": {
+				"default": "textures/items/skin_item"
+			},
+			"render_controllers": [
+				"controller.render.default"
+			]
+		}
+	}
+}

@@ -1,0 +1,18 @@
+{
+	"format_version": "1.20.80",
+	"minecraft:item": {
+		"description": {
+			"identifier": "magiclab:skin",
+			"menu_category": {
+				"category": "nature"
+			}
+		},
+		"components": {
+			"minecraft:icon": "magiclab:skin",
+			"minecraft:display_name": {
+				"value": "MagicSkin"
+			},
+			"minecraft:max_stack_size": 1
+		}
+	}
+}

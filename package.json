@@ -1,0 +1,19 @@
+{
+  "name": "mcpe-webskin",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host --port 3000",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "file-saver": "^2.0.5",
+    "jszip": "^3.10.1",
+    "skinview3d": "^3.1.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.7"
+  }
+}
