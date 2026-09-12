@@ -358,7 +358,7 @@ export class WardrobeMultiEditor {
       const content = await zip.loadAsync(await file.arrayBuffer());
 
       // 1. Read BP manifest
-      const bpManifestFile = content.file(/.*MagicSkin_BP\/manifest\.json$/)[0] || content.file('MagicSkin_BP/manifest.json');
+      const bpManifestFile = content.file(/.*(ZirconX-SKIN|MagicSkin)_BP\/manifest\.json$/i)[0] || content.file('ZirconX-SKIN_BP/manifest.json') || content.file('MagicSkin_BP/manifest.json');
       if (bpManifestFile) {
         try {
           const bpData = JSON.parse(await bpManifestFile.async('text'));
@@ -368,7 +368,7 @@ export class WardrobeMultiEditor {
       }
 
       // 2. Read main.js and extract playerData
-      const scriptFile = content.file(/.*MagicSkin_BP\/scripts\/main\.js$/)[0] || content.file('MagicSkin_BP/scripts/main.js');
+      const scriptFile = content.file(/.*(ZirconX-SKIN|MagicSkin)_BP\/scripts\/main\.js$/i)[0] || content.file('ZirconX-SKIN_BP/scripts/main.js') || content.file('MagicSkin_BP/scripts/main.js');
       if (scriptFile) {
         const scriptText = await scriptFile.async('text');
         let match = scriptText.match(/let\s+playerData\s*=\s*(\[[\s\S]*?\]);/);
@@ -396,7 +396,7 @@ export class WardrobeMultiEditor {
       }
 
       // 3. Match Skin Textures
-      const skinFiles = content.file(/MagicSkin_RP\/textures\/skin\/.*\.(png|jpg)$/i);
+      const skinFiles = content.file(/(ZirconX-SKIN|MagicSkin)_RP\/textures\/skin\/.*\.(png|jpg)$/i);
       for (const sf of skinFiles) {
         const filename = sf.name.split('/').pop().replace(/\.(png|jpg)$/i, '');
         const blob = new Blob([await sf.async('arraybuffer')], { type: 'image/png' });
@@ -440,11 +440,11 @@ export class WardrobeMultiEditor {
 
       // Load base templates from /templates/
       const templateFiles = [
-        'MagicSkin_BP/items/magicskin.json',
-        'MagicSkin_RP/attachables/magicskin.json',
-        'MagicSkin_RP/materials/entity.material',
-        'MagicSkin_RP/textures/items/skin_item.png',
-        'MagicSkin_RP/textures/item_texture.json',
+        'ZirconX-SKIN_BP/items/magicskin.json',
+        'ZirconX-SKIN_RP/attachables/magicskin.json',
+        'ZirconX-SKIN_RP/materials/entity.material',
+        'ZirconX-SKIN_RP/textures/items/skin_item.png',
+        'ZirconX-SKIN_RP/textures/item_texture.json',
         'packicon.png'
       ];
 
@@ -453,8 +453,8 @@ export class WardrobeMultiEditor {
           const resp = await fetch(`/templates/${tPath}`);
           const blob = await resp.blob();
           if (tPath === 'packicon.png') {
-            zip.file('MagicSkin_BP/pack_icon.png', blob);
-            zip.file('MagicSkin_RP/pack_icon.png', blob);
+            zip.file('ZirconX-SKIN_BP/pack_icon.png', blob);
+            zip.file('ZirconX-SKIN_RP/pack_icon.png', blob);
           } else {
             zip.file(tPath, blob);
           }
@@ -540,18 +540,18 @@ world.beforeEvents.itemUse.subscribe(event => {
 });
 `;
 
-      zip.file('MagicSkin_BP/scripts/main.js', scriptContent);
+      zip.file('ZirconX-SKIN_BP/scripts/main.js', scriptContent);
 
       // 2. Manifests
       const bpManifest = {
         format_version: 2,
         metadata: {
           authors: this.authors,
-          generated_with: { "MagicSkin_Studio": ["2.0.0"] }
+          generated_with: { "ZirconX_Studio": ["2.0.0"] }
         },
         header: {
-          name: `MagicSkin Wardrobe ${this.addonVersion.join(".")}`,
-          description: "Server Wardrobe Skinchanger Addon for Minecraft Bedrock",
+          name: `ZirconX-SKIN Wardrobe ${this.addonVersion.join(".")}`,
+          description: "Server Wardrobe Skinchanger Addon for Minecraft Bedrock by ZirconX",
           min_engine_version: [1, 21, 60],
           uuid: bpUuid,
           version: this.addonVersion
@@ -571,11 +571,11 @@ world.beforeEvents.itemUse.subscribe(event => {
         format_version: 2,
         metadata: {
           authors: this.authors,
-          generated_with: { "MagicSkin_Studio": ["2.0.0"] }
+          generated_with: { "ZirconX_Studio": ["2.0.0"] }
         },
         header: {
-          name: `MagicSkin Wardrobe ${this.addonVersion.join(".")}`,
-          description: "Server Wardrobe Skinchanger Addon for Minecraft Bedrock",
+          name: `ZirconX-SKIN Wardrobe ${this.addonVersion.join(".")}`,
+          description: "Server Wardrobe Skinchanger Addon for Minecraft Bedrock by ZirconX",
           min_engine_version: [1, 21, 60],
           uuid: rpUuid,
           version: this.addonVersion
@@ -588,8 +588,8 @@ world.beforeEvents.itemUse.subscribe(event => {
         ]
       };
 
-      zip.file('MagicSkin_BP/manifest.json', JSON.stringify(bpManifest, null, 2));
-      zip.file('MagicSkin_RP/manifest.json', JSON.stringify(rpManifest, null, 2));
+      zip.file('ZirconX-SKIN_BP/manifest.json', JSON.stringify(bpManifest, null, 2));
+      zip.file('ZirconX-SKIN_RP/manifest.json', JSON.stringify(rpManifest, null, 2));
 
       // 3. Render Controller & Player Entities
       const allOutfits = [];
@@ -706,19 +706,19 @@ world.beforeEvents.itemUse.subscribe(event => {
 
         // Add skin image file
         if (outfit.blob) {
-          zip.file(`MagicSkin_RP/textures/skin/${outfit.action}.png`, outfit.blob);
+          zip.file(`ZirconX-SKIN_RP/textures/skin/${outfit.action}.png`, outfit.blob);
         } else if (outfit.skinURL) {
-          zip.file(`MagicSkin_RP/textures/skin/${outfit.action}.png`, fetch(outfit.skinURL).then(r => r.blob()));
+          zip.file(`ZirconX-SKIN_RP/textures/skin/${outfit.action}.png`, fetch(outfit.skinURL).then(r => r.blob()));
         }
       });
 
-      zip.file('MagicSkin_RP/render_controllers/player.render_controller.json', JSON.stringify(renderControllerJson, null, 2));
-      zip.file('MagicSkin_RP/entity/player.entity.json', JSON.stringify(playerEntityRpJson, null, 2));
-      zip.file('MagicSkin_BP/entities/player.json', JSON.stringify(playerEntityBpJson, null, 2));
+      zip.file('ZirconX-SKIN_RP/render_controllers/player.render_controller.json', JSON.stringify(renderControllerJson, null, 2));
+      zip.file('ZirconX-SKIN_RP/entity/player.entity.json', JSON.stringify(playerEntityRpJson, null, 2));
+      zip.file('ZirconX-SKIN_BP/entities/player.json', JSON.stringify(playerEntityBpJson, null, 2));
 
       // Generate & save
       const blob = await zip.generateAsync({ type: 'blob' });
-      saveAs(blob, `magicskin_server_wardrobe_${Date.now()}.mcaddon`);
+      saveAs(blob, `zirconx_server_wardrobe_${Date.now()}.mcaddon`);
       showToast('สร้างและดาวน์โหลดแอดออนเซิร์ฟเวอร์สำเร็จ (.mcaddon)', 'success');
     } catch (err) {
       console.error(err);

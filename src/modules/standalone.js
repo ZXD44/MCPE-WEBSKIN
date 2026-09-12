@@ -336,7 +336,7 @@ export class StandaloneAddonGenerator {
       }
 
       // 1. Behavior Pack
-      const bpFolder = `${this.addonName}_MagicSkin_BP`;
+      const bpFolder = `${this.addonName}_ZirconX-SKIN_BP`;
       const itemJson = {
         format_version: "1.21.10",
         "minecraft:item": {
@@ -388,7 +388,7 @@ export class StandaloneAddonGenerator {
       zip.file(`${bpFolder}/manifest.json`, JSON.stringify(bpManifest, null, 2));
 
       // 2. Resource Pack
-      const rpFolder = `${this.addonName}_MagicSkin_RP`;
+      const rpFolder = `${this.addonName}_ZirconX-SKIN_RP`;
       const attachableJson = {
         format_version: "1.8.0",
         "minecraft:attachable": {
@@ -463,7 +463,7 @@ export class StandaloneAddonGenerator {
       } else {
         // Fallback default icon
         try {
-          const defaultIcon = await (await fetch('/templates/MagicSkin_RP/textures/items/skin_item.png')).blob();
+          const defaultIcon = await (await fetch('/templates/ZirconX-SKIN_RP/textures/items/skin_item.png')).blob();
           zip.file(`${rpFolder}/textures/items/magiclab/${itemId}.png`, defaultIcon);
         } catch (_) {}
       }
