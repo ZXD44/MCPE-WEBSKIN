@@ -1,5 +1,5 @@
 /**
- * Utilities for Minecraft Bedrock Skin Studio
+ * Utilities for Minecraft Bedrock Skin Project
  */
 
 export function generateUUID() {
@@ -43,28 +43,36 @@ export function showToast(message, type = "info") {
 }
 
 /**
- * Downscale image if size > 128 using nearest neighbor (crisp pixel art)
+ * Process skin resolution: supports standard and HD skins (512, 1024, 1048, 2048, 4096)
+ * Preserves original resolution and converts legacy 64x32 skins to 64x64.
  */
 export function processSkinResolution(img) {
-  return new Promise((resolve) => {
-    const validSizes = [64, 128, 192, 256, 320, 384, 448, 512, 1024, 2048, 4096];
-    if (!validSizes.includes(img.width) || img.width !== img.height) {
-      throw new Error("กรุณาอัพโหลดสกินรูปสี่เหลี่ยมจัตุรัสที่มีขนาดมาตรฐาน เช่น 64x64 หรือ 128x128");
-    }
-
-    if (img.width > 128) {
+  return new Promise((resolve, reject) => {
+    // Legacy 64x32 skin: upgrade to 64x64 square
+    if (img.width === 64 && img.height === 32) {
       const canvas = document.createElement("canvas");
-      canvas.width = 128;
-      canvas.height = 128;
+      canvas.width = 64;
+      canvas.height = 64;
       const ctx = canvas.getContext("2d");
       ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(img, 0, 0, 128, 128);
-      
-      const downscaled = new Image();
-      downscaled.onload = () => resolve(downscaled);
-      downscaled.src = canvas.toDataURL("image/png");
-    } else {
-      resolve(img);
+      ctx.drawImage(img, 0, 0);
+      const upgraded = new Image();
+      upgraded.onload = () => resolve(upgraded);
+      upgraded.onerror = () => reject(new Error("ไม่สามารถประมวลผลไฟล์สกินได้"));
+      upgraded.src = canvas.toDataURL("image/png");
+      return;
     }
+
+    const validExplicitSizes = [64, 128, 192, 256, 320, 384, 448, 512, 1024, 1048, 2048, 4096];
+    const isSquare = img.width === img.height;
+    const isValidSize = validExplicitSizes.includes(img.width) || (isSquare && img.width % 64 === 0 && img.width <= 4096);
+
+    if (!isSquare || !isValidSize) {
+      reject(new Error("กรุณาอัพโหลดสกินรูปสี่เหลี่ยมจัตุรัส (เช่น 64, 128, 512, 1024, 1048, 2048, 4096)"));
+      return;
+    }
+
+    // Preserve full HD resolution directly (no downscaling)
+    resolve(img);
   });
 }

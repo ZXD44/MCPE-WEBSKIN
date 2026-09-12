@@ -1,7 +1,7 @@
-# 🎨 MCPE Skin Studio (ZirconX-SKIN)
+# 🎨 ZirconX Skin Project (ZirconX-SKIN)
 
 > **เว็บแอปพลิเคชันเครื่องมือสร้างและจัดการสกิน Minecraft Bedrock Edition ครบวงจร**  
-> ใช้งานง่ายบนมือถือ (Mobile-First) พรีวิว 3 มิติแบบเรียลไทม์ และส่งออกเป็นไฟล์ `.mcaddon` นำเข้าเกมได้ทันที
+> ใช้งานง่ายบนมือถือและคอมพิวเตอร์ พรีวิวโมเดล 3 มิติแบบเรียลไทม์ พร้อมระบบแยกไฟล์ ZIP และส่งออกเป็นไฟล์ `.mcaddon` นำเข้าเกมได้ทันที
 
 🔗 **เข้าใช้งานออนไลน์ได้ที่**: [https://zxd44.github.io/MCPE-WEBSKIN/](https://zxd44.github.io/MCPE-WEBSKIN/)
 
@@ -10,36 +10,53 @@
 ## 🌟 ฟีเจอร์เด่น (Key Features)
 
 ### 1. 🎭 ทำสกินล่องหน (Hide Part Editor)
-- **ลบส่วนของสกินตามต้องการ**: เลือกซ่อนหรือแสดงผลส่วนหัว, ลำตัว, แขน, หรือขา (คำนวณครอบคลุมทั้ง Inner Layer และ Outer Layer/Hat/Jacket)
-- **1-Tap Quick Presets**: มีปุ่มพรีเซ็ตด่วนแตะครั้งเดียว เช่น `เหลือแค่หัว`, `เหลือแค่ตัว`, `ซ่อนหัว`, `ซ่อนตัว`, `ซ่อนแขน`, `ซ่อนขา`
-- **Interactive 3D Preview**: แสดงผลตัวละคร 3 มิติขยับได้ หมุนได้ 360 องศา ผ่าน WebGL Three.js (`skinview3d`)
-- **Pixel-Perfect Auto Resizer**: รองรับขนาดสกินตั้งแต่ 64x64 จนถึง 4096px และลดขนาดเป็น 128x128 ด้วย Nearest-Neighbor เพื่อรักษาความคมชัดระดับพิกเซล
+- **ลบชิ้นส่วนสกินตามต้องการ**: เลือกลบหรือแสดงผลส่วนหัว, ลำตัว, แขน, หรือขา ครอบคลุมทั้งเลเยอร์ในและเลเยอร์นอก (Hat/Jacket/Sleeves/Pants)
+- **พรีเซ็ตด่วน 1 คลิก (One-Click Presets)**:
+  - `หัวลอย`: เหลือเฉพาะหัว ลำตัว แขน ขาล่องหน
+  - `ล่องหน 100%`: โปร่งใสทั้งตัว
+  - `ถอดแขนขา`: ซ่อนเฉพาะแขนและขา
+  - `แค่ตัว`: ซ่อนหัว แขน และขา
+  - `ซ่อนหัว` & `ซ่อนตัว`
+  - `ทั้งหมด (รีเซ็ต)`: คืนค่าแสดงผลครบทุกส่วน
+- **ดาวน์โหลดภาพสกินตรง (.png)**: บันทึกไฟล์ภาพสกินที่มีชิ้นส่วนโปร่งใสไปใช้ในเกมได้ทันที ไม่ต้องผ่านแอดออน
 
-### 2. 🦺 แอดออนสกินแบบไอเทม (Standalone Addon Generator)
-- **แปลงสกินเป็นชุดเกราะไอเทม**: สวมใส่ในช่องกางเกง (`slot.armor.legs`) เพื่อเปลี่ยนโมเดลตัวละครได้ทันทีในเกม
+### 2. 🧊 พรีวิว 3 มิติสมจริง (Interactive 3D Skin Viewer)
+- ขับเคลื่อนด้วย WebGL Three.js (`skinview3d`)
+- **สลับโมเดล Steve / Alex**:
+  - `Steve`: โมเดลแขนกว้าง 4 พิกเซล
+  - `Alex`: โมเดลแขนเรียว 3 พิกเซล
+- **อนิเมชันขยับได้**: โหมดเดิน (Walk), โหมดวิ่ง (Run), และโหมดหยุดนิ่ง (Idle)
+- **พรีวิวโปร่งใสแบบเรียลไทม์**: เมื่อติ๊กซ่อนชิ้นส่วนใด โมเดล 3D จะโปร่งใสตามทันที
+- **ระบบถนอมแบตเตอรี่ (Battery Saver)**: หยุดการเรนเดอร์อัตโนมัติเมื่อเลื่อนหน้าจอออกจากมุมมอง 3D
+
+### 3. 📦 รองรับไฟล์บีบอัด (ZIP / MCPACK / MCADDON)
+- แตกไฟล์ในหน่วยความจำ (In-Memory Unpack) ผ่าน `JSZip` ทันทีที่อัปโหลด
+- สแกนหาไฟล์ภาพสกินอัตโนมัติ พร้อมอ่านชื่อแอดออนจาก `manifest.json` มากรอกให้อัตโนมัติ
+
+### 4. 🦺 แอดออนสกินแบบไอเทม (Standalone Addon Generator)
+- **แปลงสกินเป็นไอเทมสวมใส่**: เลือกตำแหน่งสวมใส่ได้ทั้ง **ชุด (เสื้อเกราะ / ช่องลำตัว)**, **เฉพาะหัว (หมวก)**, **กางเกง**, หรือ **สร้างทั้งหัวและชุด (แยก 2 ชิ้น)**
+- **ไม่มีวันพัง & ป้องกัน 0**: ไอเทมไม่มีแถบความเสียหาย (Unbreakable) และไม่มีพลังป้องกัน เพื่อความสมดุลในเซิร์ฟเวอร์
+- **Dynamic 16x16 Item Icon**: ครอปใบหน้าตัวละครจากสกินจริงที่อัปโหลดมาทำเป็นไอคอนไอเทมในเกมอัตโนมัติ
 - **ซ่อนไอเทมในมือ (In-Hand Scale Trick)**: ปรับสเกลขณะถือในมือเป็น `1e-5` ทำให้มองไม่เห็นไอเทมลอยในมือ
 - **Smart Autofill**: ดึงชื่อไฟล์สกินมาตั้งเป็นชื่อแอดออนและชื่อไอเทมในเกมให้อัตโนมัติ
-- **Auto Icon Generator**: ครอปใบหน้าตัวละครจากสกินมาทำเป็นไอคอน 16x16 พิกเซลให้อัตโนมัติทันที
-- **รองรับโมเดล 3 รูปแบบ**:
-  - Steve (Classic แขนใหญ่: `geometry.humanoid.custom`)
-  - Alex (Slim แขนเล็ก: `geometry.humanoid.customSlim`)
-  - Custom Blockbench Geometry (`minecraft:geometry` JSON)
 
-### 3. 🚪 ระบบตู้เสื้อผ้าเซิร์ฟเวอร์ (Wardrobe Multi-Skin Addon)
-- **ปลดล็อกใช้งานฟรี 100%**: ไม่มีระบบล็อกรหัสผ่าน Hash SHA-256
-- **Batch Upload**: เลือกและอัพโหลดไฟล์สกินพร้อมกันหลายไฟล์ในครั้งเดียว ระบบจะดึงชื่อไฟล์มาตั้งเป็นชื่อชุดให้อัตโนมัติ
-- **Xbox Gamertags Access Control**: กำหนดรายชื่อผู้เล่นที่มีสิทธิ์เปิดแต่ละตู้ได้ ด้วยระบบใส่ชื่อแบบ Chips (พิมพ์ชื่อแล้วกด Enter หรือเครื่องหมายจุลภาค)
+### 5. 🚪 ระบบตู้เสื้อผ้าเซิร์ฟเวอร์ (Wardrobe Multi-Skin Addon)
+- **ปลดล็อกใช้งานฟรี 100%**: ไม่มีระบบล็อกรหัสผ่าน
+- **Batch Upload**: เลือกและอัปโหลดไฟล์สกินพร้อมกันหลายไฟล์ในครั้งเดียว
+- **Xbox Gamertags Access Control**: กำหนดรายชื่อผู้เล่นที่มีสิทธิ์เปิดแต่ละตู้ได้
 - **Two-Way .mcaddon Compatibility**:
   - **นำเข้า (Import)**: นำไฟล์ `.mcaddon` เดิมมาเปิดบนเว็บเพื่อแก้ไขตู้และชุดต่อได้ตลอดเวลา
-  - **ส่งออก (Export)**: สร้างแพ็กเกจ `.mcaddon` ที่มีสคริปต์ Bedrock Script API (`@minecraft/server 2.1.0` และ `@minecraft/server-ui 2.0.0`) และ Render Controllers สมบูรณ์แบบ
+  - **ส่งออก (Export)**: สร้างแพ็กเกจ `.mcaddon` ที่มีสคริปต์ Bedrock Script API (`@minecraft/server 2.1.0` และ `@minecraft/server-ui 2.0.0`) สมบูรณ์แบบ
 
----
+### 6. 🎧 เสียงเอฟเฟกต์ Minecraft SFX (Web Audio API)
+- เสียงสังเคราะห์ความถี่บริสุทธิ์แบบ Web Audio API ไม่ต้องดาวน์โหลดไฟล์ภายนอก
+- มีเสียงคลิกปุ่ม UI Click, เสียง Pop ตอนสวมใส่สกิน, และเสียง Level Up ตอนดาวน์โหลดแอดออน
+- สวิตช์เปิด/ปิดเสียง (Mute Toggle) ที่มุมบนขวา พร้อมบันทึกสถานะอัตโนมัติ
 
-## 📱 ออกแบบมาเพื่อมือถือ (Mobile-First UX)
-
-- **Mobile Bottom Navigation Bar**: แถบนำทางด้านล่างสลับหน้าง่ายด้วยนิ้วโป้งมือเดียว
-- **Touch-Friendly Targets**: ปุ่มกดและช่องกรอกทั้งหมดมีขนาดไม่ต่ำกว่า 44px ตามมาตรฐาน Touch Guidelines
-- **Responsive 3D Canvas**: หมุนและซูมดูโมเดล 3D บนหน้าจอมือถือได้อย่างลื่นไหล
+### 7. ⌨️ การป้อนข้อมูลสะดวกสบาย (UX Polish)
+- **Ctrl + V**: กดวางภาพสกินจาก Clipboard ได้ทันที
+- **Drag & Drop**: ลากไฟล์ `.png`, `.zip`, `.mcpack`, `.mcaddon` มาวางได้ทุกที่บนหน้าเว็บ
+- **Auto HD Detection**: ตรวจจับความละเอียดสกินอัตโนมัติ (`64x64 Standard`, `128x128 HD` จนถึง 4096px)
 
 ---
 
@@ -49,21 +66,16 @@
 2. **บนโทรศัพท์มือถือ (iOS / Android)**:
    - แตะเปิดไฟล์ `.mcaddon` แล้วเลือกเปิดด้วย **Minecraft** ตัวเกมจะ Import ทั้ง Resource Pack และ Behavior Pack ให้อัตโนมัติ
 3. **บนคอมพิวเตอร์ (Windows 10/11)**:
-   - ดับเบิ้ลคลิกที่ไฟล์ `.mcaddon`
+   - ดับเบิลคลิกที่ไฟล์ `.mcaddon` ตัวเกมจะเปิดและติดตั้งทันที
 4. **เปิดใช้งานในโลก (World Settings)**:
-   - เข้าไปที่ **Resource Packs** ➔ Active แอดออน
-   - เข้าไปที่ **Behavior Packs** ➔ Active แอดออน
+   - เข้าไปที่ **Resource Packs** ➔ กด Active แอดออน
+   - เข้าไปที่ **Behavior Packs** ➔ กด Active แอดออน
    - ในหัวข้อ **Experiments** ➔ เปิดใช้งาน **Beta APIs** (จำเป็นสำหรับระบบตู้เสื้อผ้า)
 
 ---
 
 ## 💻 วิธีรันโปรเจกต์บนเครื่องของคุณ (Local Development)
 
-### ข้อกำหนด:
-- Node.js (v18 ขึ้นไป)
-- npm
-
-### ขั้นตอน:
 ```bash
 # 1. ติดตั้ง Dependencies
 npm install
@@ -81,24 +93,29 @@ npm run build
 
 ```
 MCPE-WEBSKIN/
-├── .github/workflows/deploy.yml # GitHub Actions อัปเดต GitHub Pages อัตโนมัติ
+├── .agents/
+│   ├── skin_studio_system.md    # สถาปัตยกรรมและคู่มือระบบฉบับสมบูรณ์
+│   └── AGENTS.md                # กฎและสารบัญเอกสาร
 ├── public/
 │   └── templates/               # ไฟล์ต้นฉบับ Minecraft Bedrock Addon (BP/RP/Textures)
 ├── src/
 │   ├── modules/
-│   │   ├── hidepart.js          # ระบบสกินล่องหน + UV Canvas + 3D Viewer
-│   │   ├── standalone.js        # ตัวสร้างแอดออนสกินไอเทมเดี่ยว
+│   │   ├── hidepart.js          # ระบบสกินล่องหน + UV Canvas + 3D Viewer + Presets
+│   │   ├── standalone.js        # ตัวสร้างแอดออนสกินไอเทมเดี่ยว + Dynamic Icon
 │   │   ├── multieditor.js       # ระบบตู้เสื้อผ้าเซิร์ฟเวอร์ + Script API
-│   │   └── utils.js             # ฟังก์ชันช่วย (UUID, Toast, Scale)
-│   ├── main.js                  # ตัวควบคุม Router และสลับแท็บ
-│   └── style.css                # ดีไซน์ระบบแบบ Mobile-First
-├── index.html                   # โครงสร้างหน้าเว็บทั้งหมด
-├── vite.config.js               # การตั้งค่า Vite Base สำหรับ GitHub Pages
-├── package.json
+│   │   ├── ziphandler.js        # ตัวแตกไฟล์ ZIP/MCPACK/MCADDON
+│   │   ├── sfx.js               # เอนจินเสียงสังเคราะห์ Web Audio API
+│   │   ├── mcfire.js            # ระบบสะเก็ดไฟละอองพิกเซล Minecraft
+│   │   └── utils.js             # ฟังก์ชันช่วย (UUID, Image Resizer, Toast)
+│   ├── main.js                  # ตัวควบคุม Router, Drag&Drop, Ctrl+V, Global SFX
+│   └── style.css                # ดีไซน์ระบบ Dragon Crimson Theme & Responsive
+├── index.html                   # โครงสร้างหน้าเว็บหลัก
+├── vite.config.js               # การตั้งค่า Vite Base
 └── README.md
 ```
 
 ---
 
-## 📄 ลิขสิทธิ์และการพัฒนา
-พัฒนาขึ้นเพื่อคอมมูนิตี้ Minecraft Bedrock สำหรับเซิร์ฟเวอร์ Roleplay และผู้เล่นทั่วไป
+## 📄 เครดิตผู้พัฒนา
+พัฒนาและออกแบบโดย **ZirconX**  
+เว็บไซต์: [www.zirconx.xyz](https://www.zirconx.xyz)
