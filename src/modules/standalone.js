@@ -3,7 +3,7 @@
  */
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { generateUUID, generateRandomId, processSkinResolution, showToast } from './utils.js';
+import { generateUUID, generateRandomId, processSkinResolution, detectSlimModel, showToast } from './utils.js';
 import { isZipArchive, extractSkinFromArchive } from './ziphandler.js';
 import { sfx } from './sfx.js';
 import * as skinview3d from 'skinview3d';
@@ -22,13 +22,14 @@ export class StandaloneAddonGenerator {
     this.modelType = 1; // 1: Steve, 2: Alex, 3: Custom Geometry
     this.customGeometryJson = null;
 
-    this.itemSlotType = 'suit'; // 'suit', 'head', 'legs', 'both'
+    this.itemSlotType = 'head'; // 'head', 'suit', 'legs', 'feet', 'both'
 
+    // Default to head + body hair so long hair is preserved out of the box
     this.parts = {
       head: true,
       body: true,
-      arms: true,
-      legs: true
+      arms: false,
+      legs: false
     };
 
     this.canvas = document.getElementById('standalone-canvas');
@@ -127,9 +128,38 @@ export class StandaloneAddonGenerator {
           if (parent) {
             parent.classList.toggle('checked', e.target.checked);
           }
+          this.updateDynamicItemIcon();
           this.renderSkin();
         });
       }
+    });
+
+    // Quick Presets for Standalone (Independent part toggle)
+    document.querySelectorAll('.standalone-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.standalone-preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        sfx.playClick();
+        const preset = btn.dataset.preset;
+        if (preset === 'all') {
+          this.parts = { head: true, body: true, arms: true, legs: true };
+        } else if (preset === 'head-hair') {
+          this.parts = { head: true, body: true, arms: false, legs: false };
+        } else if (preset === 'head-only') {
+          this.parts = { head: true, body: false, arms: false, legs: false };
+        } else if (preset === 'suit-only') {
+          this.parts = { head: false, body: true, arms: true, legs: true };
+        }
+
+        ['head', 'body', 'arms', 'legs'].forEach(part => {
+          const cb = document.getElementById(`standalone-part-${part}`);
+          if (cb) cb.checked = this.parts[part];
+          const parent = cb?.closest('.part-toggle-item');
+          if (parent) parent.classList.toggle('checked', this.parts[part]);
+        });
+        this.updateDynamicItemIcon();
+        this.renderSkin();
+      });
     });
 
     // Model selection buttons
@@ -150,30 +180,14 @@ export class StandaloneAddonGenerator {
       });
     });
 
-    // Item Slot Type buttons
+    // Item Slot Type buttons - Free & Decoupled from parts!
     document.querySelectorAll('.slot-select-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.slot-select-btn').forEach(b => b.classList.remove('active', 'mc-btn-primary'));
         btn.classList.add('active', 'mc-btn-primary');
-        this.itemSlotType = btn.dataset.slot || 'suit';
+        this.itemSlotType = btn.dataset.slot || 'head';
+        sfx.playClick();
 
-        // Auto sync part toggles for convenience
-        if (this.itemSlotType === 'head') {
-          this.parts = { head: true, body: false, arms: false, legs: false };
-        } else if (this.itemSlotType === 'suit') {
-          this.parts = { head: false, body: true, arms: true, legs: true };
-        } else if (this.itemSlotType === 'legs') {
-          this.parts = { head: false, body: false, arms: false, legs: true };
-        } else if (this.itemSlotType === 'both') {
-          this.parts = { head: true, body: true, arms: true, legs: true };
-        }
-
-        ['head', 'body', 'arms', 'legs'].forEach(part => {
-          const cb = document.getElementById(`standalone-part-${part}`);
-          if (cb) cb.checked = this.parts[part];
-          const parent = cb?.closest('.part-toggle-item');
-          if (parent) parent.classList.toggle('checked', this.parts[part]);
-        });
         this.updateDynamicItemIcon();
         this.renderSkin();
       });
@@ -295,26 +309,28 @@ export class StandaloneAddonGenerator {
         resBadge.style.display = 'inline-flex';
       }
 
-      // Auto-generate 16x16 icon directly from uploaded skin
-      this.updateDynamicItemIcon();
-
-      // Sync checkboxes with current slot type
-      if (this.itemSlotType === 'head') {
-        this.parts = { head: true, body: false, arms: false, legs: false };
-      } else if (this.itemSlotType === 'suit') {
-        this.parts = { head: false, body: true, arms: true, legs: true };
-      } else if (this.itemSlotType === 'legs') {
-        this.parts = { head: false, body: false, arms: false, legs: true };
-      } else {
-        this.parts = { head: true, body: true, arms: true, legs: true };
+      // Auto-detect Alex (slim 3px) vs Steve (default 4px) to prevent reversed/inverted limb bugs
+      const isSlim = detectSlimModel(processedImg);
+      this.modelType = isSlim ? 2 : 1;
+      document.querySelectorAll('.model-select-btn').forEach(btn => {
+        const m = parseInt(btn.dataset.model);
+        btn.classList.toggle('active', m === this.modelType);
+        btn.classList.toggle('mc-btn-primary', m === this.modelType);
+      });
+      if (this.viewer) {
+        this.viewer.playerObject.skin.modelType = isSlim ? 'slim' : 'default';
       }
 
+      // Keep checkboxes synced with this.parts
       ['head', 'body', 'arms', 'legs'].forEach(part => {
         const cb = document.getElementById(`standalone-part-${part}`);
         if (cb) cb.checked = this.parts[part];
         const parent = cb?.closest('.part-toggle-item');
         if (parent) parent.classList.toggle('checked', this.parts[part]);
       });
+
+      // Auto-generate 16x16 icon directly from uploaded skin
+      this.updateDynamicItemIcon();
 
       document.getElementById('standalone-skin-workarea').style.display = 'block';
 
@@ -439,15 +455,28 @@ export class StandaloneAddonGenerator {
     const t = this.skinResolution / 64;
 
     if (this.itemSlotType === 'head') {
-      // Head front (8x8 at x=8, y=8) + Hat layer (x=40, y=8)
-      ctx.drawImage(this.skinImg, Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 0, 0, 16, 16);
-      ctx.drawImage(this.skinImg, Math.round(40 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 0, 0, 16, 16);
+      if (this.parts.body) {
+        // Head + Torso Hair
+        ctx.drawImage(this.skinImg, Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 2, 0, 12, 12);
+        ctx.drawImage(this.skinImg, Math.round(40 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 2, 0, 12, 12);
+        ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(20 * t), Math.round(8 * t), Math.round(4 * t), 2, 12, 12, 4);
+        ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(36 * t), Math.round(8 * t), Math.round(4 * t), 2, 12, 12, 4);
+      } else {
+        ctx.drawImage(this.skinImg, Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 0, 0, 16, 16);
+        ctx.drawImage(this.skinImg, Math.round(40 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 0, 0, 16, 16);
+      }
     } else if (this.itemSlotType === 'legs') {
       // Leg front (4x12 at x=0, y=20) + Pant layer (x=0, y=36)
       ctx.drawImage(this.skinImg, Math.round(4 * t), Math.round(20 * t), Math.round(4 * t), Math.round(12 * t), 2, 2, 5, 12);
       ctx.drawImage(this.skinImg, Math.round(4 * t), Math.round(36 * t), Math.round(4 * t), Math.round(12 * t), 2, 2, 5, 12);
       ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(52 * t), Math.round(4 * t), Math.round(12 * t), 8, 2, 5, 12);
       ctx.drawImage(this.skinImg, Math.round(4 * t), Math.round(52 * t), Math.round(4 * t), Math.round(12 * t), 8, 2, 5, 12);
+    } else if (this.itemSlotType === 'feet') {
+      // Boots / Feet area
+      ctx.drawImage(this.skinImg, Math.round(4 * t), Math.round(26 * t), Math.round(4 * t), Math.round(6 * t), 2, 6, 5, 8);
+      ctx.drawImage(this.skinImg, Math.round(4 * t), Math.round(42 * t), Math.round(4 * t), Math.round(6 * t), 2, 6, 5, 8);
+      ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(58 * t), Math.round(4 * t), Math.round(6 * t), 8, 6, 5, 8);
+      ctx.drawImage(this.skinImg, Math.round(4 * t), Math.round(58 * t), Math.round(4 * t), Math.round(6 * t), 8, 6, 5, 8);
     } else {
       // Torso front (8x12 at x=20, y=20) + Jacket outer layer (x=20, y=36)
       ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(20 * t), Math.round(8 * t), Math.round(12 * t), 4, 2, 8, 12);
@@ -476,8 +505,17 @@ export class StandaloneAddonGenerator {
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
     const t = this.skinResolution / 64;
-    ctx.drawImage(this.skinImg, Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 0, 0, 16, 16);
-    ctx.drawImage(this.skinImg, Math.round(40 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 0, 0, 16, 16);
+
+    if (this.parts.body) {
+      // Head + Torso Hair
+      ctx.drawImage(this.skinImg, Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 2, 0, 12, 12);
+      ctx.drawImage(this.skinImg, Math.round(40 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 2, 0, 12, 12);
+      ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(20 * t), Math.round(8 * t), Math.round(4 * t), 2, 12, 12, 4);
+      ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(36 * t), Math.round(8 * t), Math.round(4 * t), 2, 12, 12, 4);
+    } else {
+      ctx.drawImage(this.skinImg, Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 0, 0, 16, 16);
+      ctx.drawImage(this.skinImg, Math.round(40 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 0, 0, 16, 16);
+    }
     return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
   }
 
@@ -534,60 +572,47 @@ export class StandaloneAddonGenerator {
         geometryIdentifier = this.customGeometryJson['minecraft:geometry'][0].description.identifier;
       }
 
-      // Configure item configurations (support suit, head, legs, or both head & suit)
+      // Configure item configurations (support head, suit, legs, feet, or both head & suit)
       let itemConfigs = [];
-      if (this.itemSlotType === 'head') {
-        itemConfigs.push({
-          id: `${baseItemId}_head`,
-          name: this.itemName,
-          slot: 'slot.armor.head',
-          group: 'itemGroup.name.helmet',
-          parentSetup: 'variable.helmet_layer_visible = 0.0;',
-          skinBlob: this.processedSkinBlob,
-          isHead: true
-        });
-      } else if (this.itemSlotType === 'suit') {
-        itemConfigs.push({
-          id: `${baseItemId}_suit`,
-          name: this.itemName,
-          slot: 'slot.armor.chest',
-          group: 'itemGroup.name.chestplate',
-          parentSetup: 'variable.chest_layer_visible = 0.0;',
-          skinBlob: this.processedSkinBlob,
-          isHead: false
-        });
-      } else if (this.itemSlotType === 'legs') {
-        itemConfigs.push({
-          id: `${baseItemId}_legs`,
-          name: this.itemName,
-          slot: 'slot.armor.legs',
-          group: 'itemGroup.name.leggings',
-          parentSetup: 'variable.leg_layer_visible = 0.0;',
-          skinBlob: this.processedSkinBlob,
-          isHead: false
-        });
-      } else if (this.itemSlotType === 'both') {
-        // Head piece
-        const headSkinBlob = await this.createSpecificSkinBlob({ head: true, body: false, arms: false, legs: false });
+      const slotMap = {
+        head: { slot: 'slot.armor.head', group: 'itemGroup.name.helmet' },
+        suit: { slot: 'slot.armor.chest', group: 'itemGroup.name.chestplate' },
+        legs: { slot: 'slot.armor.legs', group: 'itemGroup.name.leggings' },
+        feet: { slot: 'slot.armor.feet', group: 'itemGroup.name.boots' }
+      };
+
+      if (this.itemSlotType === 'both') {
+        // Head piece (Head + body hair if user selected body)
+        const headSkinBlob = await this.createSpecificSkinBlob({ head: true, body: this.parts.body, arms: false, legs: false });
         itemConfigs.push({
           id: `${baseItemId}_head`,
           name: `${this.itemName} (หัว)`,
           slot: 'slot.armor.head',
           group: 'itemGroup.name.helmet',
-          parentSetup: 'variable.helmet_layer_visible = 0.0;',
           skinBlob: headSkinBlob,
           isHead: true
         });
         // Suit piece (body + arms + legs)
-        const suitSkinBlob = await this.createSpecificSkinBlob({ head: false, body: true, arms: true, legs: true });
+        const suitSkinBlob = await this.createSpecificSkinBlob({ head: false, body: true, arms: this.parts.arms, legs: this.parts.legs });
         itemConfigs.push({
           id: `${baseItemId}_suit`,
           name: `${this.itemName} (ชุด)`,
           slot: 'slot.armor.chest',
           group: 'itemGroup.name.chestplate',
-          parentSetup: 'variable.chest_layer_visible = 0.0;',
           skinBlob: suitSkinBlob,
           isHead: false
+        });
+      } else {
+        // Single unified item in user's chosen slot with EXACTLY the parts user selected!
+        const currentSlot = slotMap[this.itemSlotType] || slotMap.head;
+        const skinBlob = await this.createSpecificSkinBlob(this.parts);
+        itemConfigs.push({
+          id: `${baseItemId}_${this.itemSlotType}`,
+          name: this.itemName,
+          slot: currentSlot.slot,
+          group: currentSlot.group,
+          skinBlob: skinBlob,
+          isHead: this.itemSlotType === 'head'
         });
       }
 
@@ -645,7 +670,20 @@ export class StandaloneAddonGenerator {
       };
       zip.file(`${bpFolder}/manifest.json`, JSON.stringify(bpManifest, null, 2));
 
-      // 2. Resource Pack Attachables & Textures
+      // 2. Resource Pack Custom Render Controller & Attachables
+      // Custom render controller ensures Bedrock doesn't forcibly hide the torso/body when equipped in helmet slot!
+      const customRenderController = {
+        format_version: "1.10.0",
+        render_controllers: {
+          "controller.render.zirconx_skin": {
+            geometry: "geometry.default",
+            materials: [{ "*": "material.default" }],
+            textures: ["texture.default"]
+          }
+        }
+      };
+      zip.file(`${rpFolder}/render_controllers/zirconx_skin.json`, JSON.stringify(customRenderController, null, 2));
+
       const itemTextureJson = {
         resource_pack_name: this.addonName,
         texture_name: "atlas.items",
@@ -654,13 +692,13 @@ export class StandaloneAddonGenerator {
 
       for (const item of itemConfigs) {
         const attachableJson = {
-          format_version: "1.8.0",
+          format_version: "1.10.0",
           "minecraft:attachable": {
             description: {
               identifier: `zirconx:${item.id}`,
               materials: {
-                default: "armor",
-                enchanted: "armor_enchanted"
+                default: "entity_alphatest",
+                enchanted: "entity_alphatest"
               },
               textures: {
                 default: `textures/skin/${item.id}`,
@@ -669,10 +707,7 @@ export class StandaloneAddonGenerator {
               geometry: {
                 default: geometryIdentifier
               },
-              scripts: {
-                parent_setup: item.parentSetup
-              },
-              render_controllers: ["controller.render.armor"]
+              render_controllers: ["controller.render.zirconx_skin"]
             }
           }
         };

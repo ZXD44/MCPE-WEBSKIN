@@ -6,12 +6,12 @@
 class MinecraftSFX {
   constructor() {
     this.ctx = null;
-    this.muted = localStorage.getItem('mc_sfx_muted') === 'true';
+    this.muted = typeof localStorage !== 'undefined' ? localStorage.getItem('mc_sfx_muted') === 'true' : false;
   }
 
   getAudioContext() {
     if (!this.ctx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const AudioCtx = typeof window !== 'undefined' ? (window.AudioContext || window.webkitAudioContext) : null;
       if (AudioCtx) {
         this.ctx = new AudioCtx();
       }
@@ -28,7 +28,9 @@ class MinecraftSFX {
 
   toggleMute() {
     this.muted = !this.muted;
-    localStorage.setItem('mc_sfx_muted', this.muted ? 'true' : 'false');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('mc_sfx_muted', this.muted ? 'true' : 'false');
+    }
     return this.muted;
   }
 

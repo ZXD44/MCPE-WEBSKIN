@@ -2,7 +2,7 @@
  * Hide Part Editor (ระบบสร้างสกินล่องหน)
  * Supports 3D Real-time Preview, Steve/Alex Models, One-Click Presets, Direct PNG Download & ZIP/MCPACK Extraction
  */
-import { processSkinResolution, showToast } from './utils.js';
+import { processSkinResolution, detectSlimModel, showToast } from './utils.js';
 import { isZipArchive, extractSkinFromArchive } from './ziphandler.js';
 import { sfx } from './sfx.js';
 import * as skinview3d from 'skinview3d';
@@ -297,6 +297,13 @@ export class HidePartEditor {
         resBadge.textContent = this.resolution > 64 ? `${this.resolution}x${this.resolution} HD` : '64x64 Standard';
         resBadge.style.display = 'inline-flex';
       }
+
+      // Auto-detect Alex (slim 3px) vs Steve (default 4px)
+      const isSlim = detectSlimModel(processedImg);
+      this.modelType = isSlim ? 'alex' : 'steve';
+      document.querySelectorAll('.hidepart-model-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.model === this.modelType);
+      });
 
       // Reset parts to visible
       ['head', 'body', 'arms', 'legs'].forEach(part => {

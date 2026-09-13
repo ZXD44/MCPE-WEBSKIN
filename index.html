@@ -443,21 +443,60 @@
 
           <!-- Slot Picker -->
           <div class="form-box">
-            <label class="form-label">ตำแหน่งสวมใส่</label>
+            <label class="form-label">ช่องสวมใส่ในเกม (Wearable Slot)</label>
             <div class="slot-select-grid">
-              <button class="slot-select-btn active" data-slot="suit">ชุดลำตัว (เสื้อ)</button>
-              <button class="slot-select-btn" data-slot="head">ส่วนหัว (หมวก)</button>
-              <button class="slot-select-btn" data-slot="legs">ส่วนขา (กางเกง)</button>
-              <button class="slot-select-btn" data-slot="both">แยกทั้งหัวและชุด</button>
+              <button type="button" class="slot-select-btn active" data-slot="head">ช่องหมวก (Head)</button>
+              <button type="button" class="slot-select-btn" data-slot="suit">ช่องเสื้อ (Chest)</button>
+              <button type="button" class="slot-select-btn" data-slot="legs">ช่องกางเกง (Legs)</button>
+              <button type="button" class="slot-select-btn" data-slot="feet">ช่องรองเท้า (Feet)</button>
+              <button type="button" class="slot-select-btn" data-slot="both" style="grid-column: span 2;">แยก 2 ชิ้น (หมวก + ชุด)</button>
             </div>
+          </div>
+
+          <!-- Included Skin Parts -->
+          <div class="form-box">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
+              <label class="form-label" style="margin-bottom: 0;">ชิ้นส่วนที่ต้องการแสดงในไอเทม</label>
+              <span style="font-size: 0.72rem; color: #f43f5e; font-weight: 700;">เลือกได้อิสระ ไม่จำกัดช่อง</span>
+            </div>
+
+            <!-- Quick Presets for Standalone -->
+            <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem;">
+              <button type="button" class="preset-chip standalone-preset-btn" data-preset="all">เต็มตัว</button>
+              <button type="button" class="preset-chip standalone-preset-btn active" data-preset="head-hair">หัว + ปอยผมบนตัว</button>
+              <button type="button" class="preset-chip standalone-preset-btn" data-preset="head-only">เฉพาะหัว</button>
+              <button type="button" class="preset-chip standalone-preset-btn" data-preset="suit-only">ชุด (ตัว+แขนขา)</button>
+            </div>
+
+            <div class="part-grid" style="margin-bottom: 0.5rem;">
+              <label class="part-toggle-item checked">
+                <span>ส่วนหัว</span>
+                <input type="checkbox" id="standalone-part-head" checked>
+              </label>
+              <label class="part-toggle-item checked">
+                <span>ลำตัว / ปอยผม</span>
+                <input type="checkbox" id="standalone-part-body" checked>
+              </label>
+              <label class="part-toggle-item checked">
+                <span>ส่วนแขน</span>
+                <input type="checkbox" id="standalone-part-arms" checked>
+              </label>
+              <label class="part-toggle-item checked">
+                <span>ส่วนขา</span>
+                <input type="checkbox" id="standalone-part-legs" checked>
+              </label>
+            </div>
+            <p style="font-size: 0.74rem; color: #94a3b8; line-height: 1.4; margin: 0;">
+              💡 <strong>สกินผมยาว:</strong> เลือกช่องหมวก แล้วเปิด "ส่วนหัว" + "ลำตัว / ปอยผม" ปอยผมที่วาดพาดลงบนหน้าอกจะติดมากับหมวกเป็นไอเทมเดี่ยว ไม่หายและไม่กลับด้าน
+            </p>
           </div>
 
           <!-- Model Picker -->
           <div class="form-box">
             <label class="form-label">ประเภทโมเดล</label>
             <div class="model-select-grid">
-              <button class="model-select-btn active" data-model="1">Steve (แขนกว้าง)</button>
-              <button class="model-select-btn" data-model="2">Alex (แขนเรียว)</button>
+              <button type="button" class="model-select-btn active" data-model="1">Steve (แขนกว้าง 4px)</button>
+              <button type="button" class="model-select-btn" data-model="2">Alex (แขนเรียว 3px)</button>
             </div>
           </div>
 
@@ -489,10 +528,6 @@
             <input type="file" id="standalone-icon-input" accept="image/png">
             <div id="standalone-icon-dropzone"></div>
             <button id="standalone-remove-icon-btn"></button>
-            <input type="checkbox" id="standalone-part-head" checked>
-            <input type="checkbox" id="standalone-part-body" checked>
-            <input type="checkbox" id="standalone-part-arms" checked>
-            <input type="checkbox" id="standalone-part-legs" checked>
           </div>
 
           <button id="standalone-download-btn" class="mc-btn mc-btn-primary" style="margin-top: 0.5rem;">
