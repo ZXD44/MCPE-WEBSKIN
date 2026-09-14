@@ -1,8 +1,9 @@
 /**
  * ZIP / MCPACK / MCADDON Archive Handler
- * Extracts skin textures and manifest details from compressed Minecraft packages
+ * Extracts skin textures and manifest details safely using the safeZip security layer
  */
-import JSZip from 'jszip';
+import { loadSafeArchive } from '../core/security/safeZip.js';
+import { AppError, ErrorCode } from '../core/errors/AppError.js';
 
 export async function isZipArchive(file) {
   if (!file) return false;
@@ -11,8 +12,8 @@ export async function isZipArchive(file) {
 }
 
 export async function extractSkinFromArchive(file) {
-  const arrayBuffer = await file.arrayBuffer();
-  const zip = await JSZip.loadAsync(arrayBuffer);
+  // Use safeZip loader to inspect and protect against zip bombs, path traversal & oversized files
+  const zip = await loadSafeArchive(file);
 
   let skinBlob = null;
   let skinFileName = '';
@@ -35,7 +36,7 @@ export async function extractSkinFromArchive(file) {
   // 2. Scan for PNG files inside the archive
   const pngFiles = zip.file(/\.png$/i);
   if (pngFiles.length === 0) {
-    throw new Error('ไม่พบไฟล์สกิน (.png) ภายในไฟล์ ZIP/แอดออนนี้');
+    throw new AppError(ErrorCode.IMPORT_NO_SKIN_FOUND);
   }
 
   // Prioritize typical Minecraft skin paths
@@ -53,7 +54,7 @@ export async function extractSkinFromArchive(file) {
     if (selectedFile) break;
   }
 
-  // Fallback to first valid skin candidate
+  // Fallback to first valid candidate
   if (!selectedFile) {
     selectedFile = pngFiles[0];
   }
@@ -72,7 +73,7 @@ export async function extractSkinFromArchive(file) {
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error('ไฟล์ภาพภายใน ZIP ไม่ถูกต้อง'));
+      reject(new AppError(ErrorCode.IMPORT_INVALID_IMAGE));
     };
     img.src = url;
   });

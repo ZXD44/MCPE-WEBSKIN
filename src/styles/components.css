@@ -1,0 +1,360 @@
+/* ==========================================================================
+   SHARED UI COMPONENTS — MINECRAFT BEDROCK EDITION
+   ========================================================================== */
+
+/* Minecraft Item Dropzone / Hopper */
+.dropzone-box {
+  background: var(--bg-surface);
+  border: 2px dashed var(--mc-border-light);
+  border-radius: var(--r-md);
+  padding: 2rem 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 1.15rem;
+  transition: all 0.2s ease;
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .dropzone-box {
+    padding: 1.5rem 0.85rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.dropzone-box:hover {
+  background: var(--bg-panel);
+  border-color: var(--mc-green);
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.4), 0 0 20px var(--mc-green-glow);
+  transform: translateY(-2px);
+}
+
+.dropzone-box:active {
+  transform: translateY(1px);
+}
+
+.dropzone-box.drag-over {
+  border-color: var(--mc-gold) !important;
+  background: rgba(245, 158, 11, 0.08) !important;
+  box-shadow: 0 0 28px var(--mc-gold-glow) !important;
+  transform: scale(1.01);
+}
+
+.dropzone-icon {
+  margin-bottom: 0.5rem;
+  transition: transform 0.2s ease;
+}
+
+@media (max-width: 640px) {
+  .dropzone-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.dropzone-box:hover .dropzone-icon {
+  transform: translateY(-3px) scale(1.08);
+}
+
+.dropzone-text {
+  font-family: var(--font-pixel), var(--font-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .dropzone-text {
+    font-size: 0.92rem;
+  }
+}
+
+.dropzone-sub {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+  line-height: 1.35;
+}
+
+/* Resolution Badge */
+.res-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  padding: 0.18rem 0.6rem;
+  border-radius: var(--r-xs);
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: var(--mc-green);
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 10px var(--mc-green-glow);
+}
+
+/* ==========================================================================
+   3D PREVIEW STAGE — MINECRAFT DEEPSLATE PEDESTAL
+   ========================================================================== */
+.skinview3d-container {
+  width: 100%;
+  height: 310px;
+  background: radial-gradient(circle at 50% 40%, #1f232d 0%, #13141a 100%);
+  border: 2px solid var(--mc-border-light);
+  border-radius: var(--r-md);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.15rem;
+  box-shadow: inset 2px 2px 0 var(--mc-bevel-light), inset -2px -2px 0 var(--mc-bevel-dark), 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 640px) {
+  .skinview3d-container {
+    height: 270px;
+    margin-bottom: 1rem;
+  }
+}
+
+.skinview3d-container::after {
+  content: '';
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 16px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.6) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.skinview3d-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  position: relative;
+  z-index: 2;
+}
+
+.skinview3d-controls {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 15;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+@media (max-width: 480px) {
+  .skinview3d-controls {
+    bottom: 8px;
+    right: 8px;
+    gap: 4px;
+  }
+}
+
+.skinview-group {
+  display: inline-flex;
+  background: rgba(18, 20, 26, 0.85);
+  border: 1px solid var(--mc-border-light);
+  border-radius: var(--r-xs);
+  padding: 2px;
+  backdrop-filter: blur(8px);
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.skinview-mini-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--r-pixel);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .skinview-mini-btn {
+    font-size: 0.68rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+.skinview-mini-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.skinview-mini-btn.active,
+.skinview-group .skinview-mini-btn.active {
+  background: var(--mc-green);
+  color: #0c1a10;
+  font-weight: 800;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.4), inset -1px -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+#hidepart-cam-reset {
+  background: rgba(18, 20, 26, 0.85);
+  border: 1px solid var(--mc-border-light);
+  color: var(--text-secondary);
+  padding: 0.38rem;
+  border-radius: var(--r-xs);
+}
+
+#hidepart-cam-reset:hover {
+  color: #ffffff;
+  border-color: var(--mc-green);
+}
+
+/* ==========================================================================
+   BUTTONS — MINECRAFT 3D BEVELED BUTTONS
+   ========================================================================== */
+
+.mc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.8rem 1.25rem;
+  border-radius: var(--r-xs);
+  font-family: var(--font-pixel), var(--font-mono), sans-serif;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  border: 2px solid var(--mc-border-dark);
+  transition: all 0.1s ease;
+  position: relative;
+  user-select: none;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+@media (max-width: 640px) {
+  .mc-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Minecraft Primary Action (Emerald / Green) */
+.mc-btn-primary {
+  background: #1e874b;
+  color: #ffffff;
+  box-shadow: inset 2px 2px 0 #38c474, inset -2px -2px 0 #0f4f2a, 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.mc-btn-primary:hover {
+  background: #24a15a;
+  box-shadow: inset 2px 2px 0 #4ade80, inset -2px -2px 0 #135f34, 0 6px 14px rgba(34, 197, 94, 0.35);
+  transform: translateY(-1px);
+}
+
+.mc-btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: inset 2px 2px 0 #0f4f2a, inset -2px -2px 0 #38c474;
+}
+
+/* Minecraft Secondary Button (Stone / Deepslate) */
+.mc-btn-dark {
+  background: #313540;
+  color: #e5e7eb;
+  box-shadow: inset 2px 2px 0 #4f5567, inset -2px -2px 0 #1a1c23, 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.mc-btn-dark:hover {
+  background: #3c414f;
+  box-shadow: inset 2px 2px 0 #5f667c, inset -2px -2px 0 #20222a, 0 6px 12px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.mc-btn-dark:active {
+  transform: translateY(2px);
+  box-shadow: inset 2px 2px 0 #1a1c23, inset -2px -2px 0 #4f5567;
+}
+
+/* View Top Bar & Back Button */
+.view-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.15rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--mc-border-mid);
+}
+
+.view-heading {
+  font-family: var(--font-pixel), var(--font-heading), monospace;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.03em;
+  text-shadow: 2px 2px 0 #000000;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+@media (max-width: 640px) {
+  .view-heading {
+    font-size: 1rem;
+  }
+}
+
+.view-heading::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  background: var(--mc-green);
+  box-shadow: 0 0 8px var(--mc-green);
+}
+
+.view-back-home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--mc-border-light);
+  color: var(--text-secondary);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--r-xs);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.08), inset -1px -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 480px) {
+  .view-back-home-btn span {
+    display: none;
+  }
+  .view-back-home-btn {
+    padding: 0.4rem 0.5rem;
+  }
+}
+
+.view-back-home-btn:hover {
+  background: var(--bg-panel-elevated);
+  border-color: var(--mc-green);
+  color: #ffffff;
+  box-shadow: 0 0 10px var(--mc-green-glow);
+}
+
+.view-back-home-btn:active {
+  transform: translateY(1px);
+}

@@ -1,126 +1,122 @@
-# 🎨 ZirconX Skin Project (ZirconX-SKIN)
+# 🐉 ZirconX Skin Studio (Blood Dragon Edition)
 
 > **เว็บแอปพลิเคชันเครื่องมือสร้างและจัดการสกิน Minecraft Bedrock Edition ครบวงจร**  
-> ใช้งานง่ายบนมือถือและคอมพิวเตอร์ พรีวิวโมเดล 3 มิติแบบเรียลไทม์ พร้อมระบบแยกไฟล์ ZIP และส่งออกเป็นไฟล์ `.mcaddon` นำเข้าเกมได้ทันที
+> สไตล์ Dark Fantasy + Luxury Gaming รองรับมือถือเป็นหลัก (Mobile-First) พรีวิว 3 มิติสด และประมวลผลบนเครื่อง 100% (Pure Client-Side In-Memory)
 
-🔗 **เข้าใช้งานออนไลน์ได้ที่**: [https://zxd44.github.io/MCPE-WEBSKIN/](https://zxd44.github.io/MCPE-WEBSKIN/)
-
----
-
-## 🌟 ฟีเจอร์เด่น (Key Features)
-
-### 1. 🎭 ทำสกินล่องหน (Hide Part Editor)
-- **ลบชิ้นส่วนสกินตามต้องการ**: เลือกลบหรือแสดงผลส่วนหัว, ลำตัว, แขน, หรือขา ครอบคลุมทั้งเลเยอร์ในและเลเยอร์นอก (Hat/Jacket/Sleeves/Pants)
-- **พรีเซ็ตด่วน 1 คลิก (One-Click Presets)**:
-  - `หัวลอย`: เหลือเฉพาะหัว ลำตัว แขน ขาล่องหน
-  - `ล่องหน 100%`: โปร่งใสทั้งตัว
-  - `ถอดแขนขา`: ซ่อนเฉพาะแขนและขา
-  - `แค่ตัว`: ซ่อนหัว แขน และขา
-  - `ซ่อนหัว` & `ซ่อนตัว`
-  - `ทั้งหมด (รีเซ็ต)`: คืนค่าแสดงผลครบทุกส่วน
-- **ดาวน์โหลดภาพสกินตรง (.png)**: บันทึกไฟล์ภาพสกินที่มีชิ้นส่วนโปร่งใสไปใช้ในเกมได้ทันที ไม่ต้องผ่านแอดออน
-
-### 2. 🧊 พรีวิว 3 มิติสมจริง (Interactive 3D Skin Viewer)
-- ขับเคลื่อนด้วย WebGL Three.js (`skinview3d`)
-- **สลับโมเดล Steve / Alex**:
-  - `Steve`: โมเดลแขนกว้าง 4 พิกเซล
-  - `Alex`: โมเดลแขนเรียว 3 พิกเซล
-- **อนิเมชันขยับได้**: โหมดเดิน (Walk), โหมดวิ่ง (Run), และโหมดหยุดนิ่ง (Idle)
-- **พรีวิวโปร่งใสแบบเรียลไทม์**: เมื่อติ๊กซ่อนชิ้นส่วนใด โมเดล 3D จะโปร่งใสตามทันที
-- **ระบบถนอมแบตเตอรี่ (Battery Saver)**: หยุดการเรนเดอร์อัตโนมัติเมื่อเลื่อนหน้าจอออกจากมุมมอง 3D
-
-### 3. 📦 รองรับไฟล์บีบอัด (ZIP / MCPACK / MCADDON)
-- แตกไฟล์ในหน่วยความจำ (In-Memory Unpack) ผ่าน `JSZip` ทันทีที่อัปโหลด
-- สแกนหาไฟล์ภาพสกินอัตโนมัติ พร้อมอ่านชื่อแอดออนจาก `manifest.json` มากรอกให้อัตโนมัติ
-
-### 4. 🦺 แอดออนสกินแบบไอเทม (Standalone Addon Generator)
-- **แปลงสกินเป็นไอเทมสวมใส่อิสระ**: เลือกตำแหน่งสวมใส่ได้ทั้ง **หมวก (ช่องหัว)**, **เสื้อ (ช่องลำตัว)**, **กางเกง (ช่องขา)**, **รองเท้า (ช่องเท้า)**, หรือ **แยก 2 ชิ้น (หมวก + ชุด)**
-- **รองรับสกินผมยาวคลุมหน้าอก (Long Hair & Chest Strands)**: รวมปอยผมที่วาดพาดลงมาบนลำตัวไว้ในไอเทมหมวกชิ้นเดียวได้ โดยใช้ Custom Render Controller (`controller.render.zirconx_skin`) ป้องกันไม่ให้ตัวเกม Bedrock แอบซ่อนกระดูกลำตัว
-- **เลือกชิ้นส่วนอิสระ (Custom Parts Toggle)**: ติ๊กเลือกเปิด/ปิด ส่วนหัว, ลำตัว/ปอยผม, แขน, หรือ ขา ได้ตามต้องการ พร้อมพรีเซ็ตด่วนสำหรับผมยาว
-- **ตรวจจับสัดส่วนโมเดลอัตโนมัติ (Auto Steve / Alex Detection)**: ตรวจจับสกินแขนเรียว (Alex 3px) และแขนกว้าง (Steve 4px) อัตโนมัติ ป้องกันปัญหาแขนบิดเบี้ยวหรือด้านในสลับด้านนอก
-- **แก้ปัญหาแขนขากลับด้าน (64x32 to 64x64 UV Mirroring)**: แปลงสกินเก่า 64x32 เป็น 64x64 พร้อมคัดลอกและกลับด้าน Horizontal Flip ของแต่ละหน้าตัดอย่างสมบูรณ์ตามมาตรฐาน Minecraft 1.8+
-- **ไม่มีวันพัง & ป้องกัน 0**: ไอเทมไม่มีแถบความเสียหาย (Unbreakable) และไม่มีพลังป้องกัน เพื่อความสมดุลในเซิร์ฟเวอร์
-- **Dynamic 16x16 Item Icon**: ครอปใบหน้าตัวละครและปอยผมจากสกินจริงที่อัปโหลดมาทำเป็นไอคอนไอเทมในเกมอัตโนมัติ
-- **ซ่อนไอเทมในมือ (In-Hand Scale Trick)**: ปรับสเกลขณะถือในมือเป็น `1e-5` ทำให้มองไม่เห็นไอเทมลอยในมือ
-- **Smart Autofill**: ดึงชื่อไฟล์สกินมาตั้งเป็นชื่อแอดออนและชื่อไอเทมในเกมให้อัตโนมัติ
-
-### 5. 🚪 ระบบตู้เสื้อผ้าเซิร์ฟเวอร์ (Wardrobe Multi-Skin Addon)
-- **ปลดล็อกใช้งานฟรี 100%**: ไม่มีระบบล็อกรหัสผ่าน
-- **Batch Upload**: เลือกและอัปโหลดไฟล์สกินพร้อมกันหลายไฟล์ในครั้งเดียว
-- **Xbox Gamertags Access Control**: กำหนดรายชื่อผู้เล่นที่มีสิทธิ์เปิดแต่ละตู้ได้
-- **Two-Way .mcaddon Compatibility**:
-  - **นำเข้า (Import)**: นำไฟล์ `.mcaddon` เดิมมาเปิดบนเว็บเพื่อแก้ไขตู้และชุดต่อได้ตลอดเวลา
-  - **ส่งออก (Export)**: สร้างแพ็กเกจ `.mcaddon` ที่มีสคริปต์ Bedrock Script API (`@minecraft/server 2.1.0` และ `@minecraft/server-ui 2.0.0`) สมบูรณ์แบบ
-
-### 6. 🎧 เสียงเอฟเฟกต์ Minecraft SFX (Web Audio API)
-- เสียงสังเคราะห์ความถี่บริสุทธิ์แบบ Web Audio API ไม่ต้องดาวน์โหลดไฟล์ภายนอก
-- มีเสียงคลิกปุ่ม UI Click, เสียง Pop ตอนสวมใส่สกิน, และเสียง Level Up ตอนดาวน์โหลดแอดออน
-- สวิตช์เปิด/ปิดเสียง (Mute Toggle) ที่มุมบนขวา พร้อมบันทึกสถานะลง `localStorage` อัตโนมัติ
-
-### 7. ⌨️ การป้อนข้อมูลสะดวกสบาย (UX Polish)
-- **Ctrl + V**: กดวางภาพสกินจาก Clipboard ได้ทันที
-- **Drag & Drop**: ลากไฟล์ `.png`, `.zip`, `.mcpack`, `.mcaddon` มาวางได้ทุกที่บนหน้าเว็บ
-- **Auto HD Detection**: ตรวจจับความละเอียดสกินอัตโนมัติ (`64x64 Standard`, `128x128 HD` จนถึง 4096px)
+🔗 **ใช้งานออนไลน์**: [https://zxd44.github.io/MCPE-WEBSKIN/](https://zxd44.github.io/MCPE-WEBSKIN/)  
+🌐 **เว็บไซต์ผู้พัฒนา**: [www.zirconx.xyz](https://www.zirconx.xyz)
 
 ---
 
-## 🎮 วิธีนำเข้าสู่เกม Minecraft Bedrock
+## ⚡ 3 เครื่องมือหลัก (The Three Artifacts)
 
-1. ดาวน์โหลดไฟล์ `.mcaddon` จากบนเว็บ
-2. **บนโทรศัพท์มือถือ (iOS / Android)**:
-   - แตะเปิดไฟล์ `.mcaddon` แล้วเลือกเปิดด้วย **Minecraft** ตัวเกมจะ Import ทั้ง Resource Pack และ Behavior Pack ให้อัตโนมัติ
-3. **บนคอมพิวเตอร์ (Windows 10/11)**:
-   - ดับเบิลคลิกที่ไฟล์ `.mcaddon` ตัวเกมจะเปิดและติดตั้งทันที
-4. **เปิดใช้งานในโลก (World Settings)**:
-   - เข้าไปที่ **Resource Packs** ➔ กด Active แอดออน
-   - เข้าไปที่ **Behavior Packs** ➔ กด Active แอดออน
-   - ในหัวข้อ **Experiments** ➔ เปิดใช้งาน **Beta APIs** (จำเป็นสำหรับระบบตู้เสื้อผ้า)
+1. **🎭 สกินล่องหน (Hide Part Editor)**:
+   - เลือกลบชิ้นส่วนสกินให้โปร่งใสระดับพิกเซล ครอบคลุมทั้งเลเยอร์ในและเลเยอร์นอก
+   - พรีเซ็ตด่วน 1 คลิก: `หัวลอย`, `ล่องหน 100%`, `ถอดแขนขา`, `แค่ตัว`, `ซ่อนหัว`, `ซ่อนตัว`
+   - ดาวน์โหลดไฟล์ภาพ `.png` นำไปใส่ในเกมได้ทันที
 
----
+2. **🦺 แอดออนสกิน (Standalone Addon Generator)**:
+   - แปลงสกินเป็นชุดเกราะสวมใส่ในเกม (ช่องหัว, ช่องตัว, ช่องขา, ช่องเท้า, หรือแยก 2 ชิ้น)
+   - รองรับวิกผมยาว/ปอยผมพาดลำตัว โดยใช้ Custom Render Controller (`controller.render.zirconx_skin`)
+   - ซ่อนโมเดลขณะถือในมือด้วยสเกล `1e-5` ใน attachable
+   - เจนไอคอน 16x16 พิกเซลจากหน้าและปอยผมตัวละครอัตโนมัติ
+   - แปลงสกินเก่า 64x32 เป็น 64x64 พร้อม UV Mirroring อัตโนมัติ
 
-## 💻 วิธีรันโปรเจกต์บนเครื่องของคุณ (Local Development)
-
-```bash
-# 1. ติดตั้ง Dependencies
-npm install
-
-# 2. รันเซิร์ฟเวอร์ทดสอบ
-npm run dev
-
-# 3. สั่ง Build สำหรับ Production
-npm run build
-```
+3. **🚪 ตู้เสื้อผ้า (Wardrobe Multi-Skin Addon)**:
+   - รวมหลายสกินในแพ็กเกจเดียว สลับชุดในเกมได้ทันที
+   - คุมสิทธิ์เปิดตู้ด้วย Xbox Gamertags
+   - นำเข้าและแก้ไขไฟล์ `.mcaddon` เดิมได้แบบ Two-Way Editing
 
 ---
 
-## 📁 โครงสร้างโปรเจกต์ (Project Structure)
+## 🛡️ จุดเด่นด้านสถาปัตยกรรม (Architecture Highlights)
+
+- **Pure Client-Side**: ปลอดภัย ไร้เซิร์ฟเวอร์ ไม่ส่งภาพสกินออกภายนอก ประมวลผล ZIP ผ่าน `JSZip` ในหน่วยความจำ
+- **SafeZip Protection**: ระบบความปลอดภัยป้องกัน Zip Bomb และ Path Traversal
+- **3D Preview Engine**: เรนเดอร์โมเดล 3D แบบเรียลไทม์ด้วย `skinview3d` (Steve/Alex, Walk/Run/Idle) พร้อมระบบหยุดเรนเดอร์เมื่อเลื่อนพ้นจอเพื่อประหยัดแบตเตอรี่
+- **Synthesized Web Audio**: เสียงเอฟเฟกต์สังเคราะห์ในตัวผ่าน Web Audio API ไม่พึ่งพาไฟล์เสียงภายนอก
+- **Universal Input**: ลากวางไฟล์บนจอได้ทุกที่ (Global Drag & Drop) และกด **Ctrl + V** เพื่อแปะภาพได้ทันที
+
+---
+
+## 📁 โครงสร้างไฟล์ในโปรเจกต์ (Clean Directory Layout)
 
 ```
 MCPE-WEBSKIN/
-├── .agents/
-│   ├── skin_studio_system.md    # สถาปัตยกรรมและคู่มือระบบฉบับสมบูรณ์
-│   └── AGENTS.md                # กฎและสารบัญเอกสาร
 ├── public/
-│   └── templates/               # ไฟล์ต้นฉบับ Minecraft Bedrock Addon (BP/RP/Textures)
+│   ├── images/               # ภาพวิชวล (Blood Dragon Hero)
+│   └── templates/            # แม่แบบ Minecraft Bedrock Addon (BP/RP)
 ├── src/
-│   ├── modules/
-│   │   ├── hidepart.js          # ระบบสกินล่องหน + UV Canvas + 3D Viewer + Presets
-│   │   ├── standalone.js        # ตัวสร้างแอดออนสกินไอเทมเดี่ยว + Dynamic Icon
-│   │   ├── multieditor.js       # ระบบตู้เสื้อผ้าเซิร์ฟเวอร์ + Script API
-│   │   ├── ziphandler.js        # ตัวแตกไฟล์ ZIP/MCPACK/MCADDON
-│   │   ├── sfx.js               # เอนจินเสียงสังเคราะห์ Web Audio API
-│   │   ├── mcfire.js            # ระบบสะเก็ดไฟละอองพิกเซล Minecraft
-│   │   └── utils.js             # ฟังก์ชันช่วย (UUID, Image Resizer, Toast)
-│   ├── main.js                  # ตัวควบคุม Router, Drag&Drop, Ctrl+V, Global SFX
-│   └── style.css                # ดีไซน์ระบบ Dragon Crimson Theme & Responsive
-├── index.html                   # โครงสร้างหน้าเว็บหลัก
-├── vite.config.js               # การตั้งค่า Vite Base
-├── GIT_GUIDE.md                 # คู่มือการใช้งาน Git, CI/CD และการ Deploy อย่างละเอียด
+│   ├── core/                 # Headless Core Engine (Pure In-Memory, Zero DOM)
+│   │   ├── addon/            # ตัวสร้างแอดออนสกินสวมใส่ 1.21.10+
+│   │   ├── wardrobe/         # ตัวสร้างและแยกแพ็กเกจตู้เสื้อผ้า
+│   │   ├── skin/             # UV Coordinates, Steve/Alex, Icon Generator
+│   │   ├── validator/        # ตรวจสอบ Manifest, UUID, Textures
+│   │   ├── security/         # ระบบป้องกัน Zip Bomb
+│   │   └── errors/           # ระบบ Error รวมศูนย์มาตรฐาน
+│   ├── modules/              # UI Controllers
+│   │   ├── hidepart.js       # ตัวควบคุมหน้าสกินล่องหน
+│   │   ├── standalone.js     # ตัวควบคุมหน้าแอดออนสกิน
+│   │   ├── wardrobe.js       # ตัวควบคุมหน้าตู้เสื้อผ้า
+│   │   ├── zip.js            # ตัวแตกไฟล์ ZIP/MCPACK/MCADDON
+│   │   ├── sfx.js            # ระบบเสียงสังเคราะห์ Minecraft
+│   │   ├── mcfire.js         # สะเก็ดไฟละอองพิกเซล
+│   │   └── utils.js          # ฟังก์ชันช่วย (UUID, Toast, Resolution)
+│   ├── styles/               # Modular CSS Design System (Blood Dragon)
+│   │   ├── variables.css     # Tokens, Reset, Scrollbars, Container
+│   │   ├── header.css        # App Header, Brand, Nav, SFX Toggle
+│   │   ├── layout.css        # Section Transitions & Headings
+│   │   ├── hero.css          # Blood Dragon Hero Stage & CTA
+│   │   ├── toolcards.css     # Obsidian Metallic Tool Slabs
+│   │   ├── components.css    # Dropzone, 3D Pedestal, Forge Buttons
+│   │   ├── editor.css        # Presets, Part Toggles, Slot Pickers
+│   │   ├── forms.css         # Inputs, Gamertags, Outfit Cards
+│   │   └── dock.css          # Mobile Bottom Dock & Toasts
+│   ├── types/                # TypeScript Type Definitions
+│   ├── main.js               # Router, Drag&Drop, Paste, Lifecycle
+│   └── style.css             # Main CSS Master Importer
+├── tests/                    # Vitest Automated Test Suite (28 Tests)
+├── index.html                # Main Application Shell
+├── tsconfig.json             # TypeScript Compiler Options
+├── vite.config.js            # Vite Configuration
 └── README.md
 ```
 
 ---
 
-## 📄 เครดิตผู้พัฒนา
-พัฒนาและออกแบบโดย **ZirconX**  
-เว็บไซต์: [www.zirconx.xyz](https://www.zirconx.xyz)
+## 💻 การพัฒนาและทดสอบ (Development & Testing)
+
+```bash
+# 1. ติดตั้ง Dependencies
+npm install
+
+# 2. รัน Dev Server
+npm run dev
+
+# 3. รัน Unit Tests (Vitest)
+npm test
+
+# 4. ตรวจสอบ TypeScript Types
+npm run type-check
+
+# 5. Build สำหรับ Production
+npm run build
+```
+
+---
+
+## 🚀 Git & Deployment Workflow
+
+- **Branch `main`**: ซอร์สโค้ดหลักของโปรเจกต์
+- **Branch `gh-pages`**: ถูกบิลด์และ Deploy ขึ้น GitHub Pages อัตโนมัติผ่าน GitHub Actions (`.github/workflows/deploy.yml`)
+- ส่งโค้ดขึ้น GitHub:
+  ```bash
+  git add .
+  git commit -m "feat: your update message"
+  git push origin main
+  ```
+
+---
+
+## 📄 ลิขสิทธิ์และผู้พัฒนา
+พัฒนาและออกแบบโดย **ZirconX** • [www.zirconx.xyz](https://www.zirconx.xyz)

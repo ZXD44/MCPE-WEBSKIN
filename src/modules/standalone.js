@@ -4,8 +4,12 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { generateUUID, generateRandomId, processSkinResolution, detectSlimModel, showToast } from './utils.js';
-import { isZipArchive, extractSkinFromArchive } from './ziphandler.js';
+import { isZipArchive, extractSkinFromArchive } from './zip.js';
 import { sfx } from './sfx.js';
+import { createStandaloneSkinAddon } from '../core/addon/addonGenerator.js';
+import { validateAddonPackage } from '../core/validator/addonValidator.js';
+import { getPartUVRectangles, applyPartClippingToContext } from '../core/skin/skinProcessor.js';
+import { createHeadIconBlob, createSuitIconBlob, generateSlotItemIconDataUrl, generateSlotItemIconBlob } from '../core/skin/iconGenerator.js';
 import * as skinview3d from 'skinview3d';
 
 export class StandaloneAddonGenerator {
@@ -14,6 +18,7 @@ export class StandaloneAddonGenerator {
     this.addonName = '';
     this.itemName = '';
     this.itemIconDataUrl = null;
+    this.hasCustomUploadedIcon = false;
 
     this.skinImg = new Image();
     this.skinResolution = 64;
@@ -106,9 +111,11 @@ export class StandaloneAddonGenerator {
     if (removeIconBtn) {
       removeIconBtn.addEventListener('click', () => {
         this.itemIconDataUrl = null;
+        this.hasCustomUploadedIcon = false;
         document.getElementById('standalone-icon-preview').style.display = 'none';
         document.getElementById('standalone-icon-dropzone').style.display = 'flex';
         removeIconBtn.style.display = 'none';
+        this.updateDynamicItemIcon();
       });
     }
 
@@ -222,12 +229,18 @@ export class StandaloneAddonGenerator {
         ctx.imageSmoothingEnabled = false;
         ctx.drawImage(img, 0, 0, 16, 16);
         this.itemIconDataUrl = canvas.toDataURL('image/png');
+        this.hasCustomUploadedIcon = true;
 
         const preview = document.getElementById('standalone-icon-preview');
-        preview.src = this.itemIconDataUrl;
-        preview.style.display = 'block';
-        document.getElementById('standalone-icon-dropzone').style.display = 'none';
-        document.getElementById('standalone-remove-icon-btn').style.display = 'inline-flex';
+        if (preview) {
+          preview.src = this.itemIconDataUrl;
+          preview.style.display = 'block';
+        }
+        const dropzone = document.getElementById('standalone-icon-dropzone');
+        if (dropzone) dropzone.style.display = 'none';
+        const removeBtn = document.getElementById('standalone-remove-icon-btn');
+        if (removeBtn) removeBtn.style.display = 'inline-flex';
+        this.updateDynamicItemIcon();
         showToast('อัพโหลดไอคอนเรียบร้อย', 'success');
       };
       img.src = event.target.result;
@@ -298,6 +311,7 @@ export class StandaloneAddonGenerator {
       const processedImg = await processSkinResolution(rawImg);
       this.skinImg = processedImg;
       this.skinResolution = processedImg.width;
+      this.hasCustomUploadedIcon = false;
 
       this.canvas.width = this.skinResolution;
       this.canvas.height = this.skinResolution;
@@ -373,36 +387,7 @@ export class StandaloneAddonGenerator {
   }
 
   getPartRectangles() {
-    const t = this.skinResolution / 64;
-    const r = (x, y, w, h) => ({
-      x: Math.round(x * t),
-      y: Math.round(y * t),
-      w: Math.round(w * t),
-      h: Math.round(h * t)
-    });
-
-    return {
-      head: [
-        r(0, 0, 32, 16),
-        r(32, 0, 32, 16)
-      ],
-      body: [
-        r(16, 16, 24, 16),
-        r(16, 32, 24, 16)
-      ],
-      arms: [
-        r(40, 16, 16, 16),
-        r(40, 32, 16, 16),
-        r(32, 48, 16, 16),
-        r(48, 48, 16, 16)
-      ],
-      legs: [
-        r(0, 16, 16, 16),
-        r(0, 32, 16, 16),
-        r(16, 48, 16, 16),
-        r(0, 48, 16, 16)
-      ]
-    };
+    return getPartUVRectangles(this.skinResolution);
   }
 
   renderSkin() {
@@ -436,101 +421,46 @@ export class StandaloneAddonGenerator {
     tctx.imageSmoothingEnabled = false;
     tctx.drawImage(this.skinImg, 0, 0, this.skinResolution, this.skinResolution);
 
-    const rects = this.getPartRectangles();
-    if (!partsToKeep.head) rects.head.forEach(r => tctx.clearRect(r.x, r.y, r.w, r.h));
-    if (!partsToKeep.body) rects.body.forEach(r => tctx.clearRect(r.x, r.y, r.w, r.h));
-    if (!partsToKeep.arms) rects.arms.forEach(r => tctx.clearRect(r.x, r.y, r.w, r.h));
-    if (!partsToKeep.legs) rects.legs.forEach(r => tctx.clearRect(r.x, r.y, r.w, r.h));
-
+    applyPartClippingToContext(tctx, this.skinResolution, partsToKeep);
     return new Promise(resolve => tempCanvas.toBlob(resolve, 'image/png'));
   }
 
   updateDynamicItemIcon() {
     if (!this.skinImg || !this.skinImg.src) return;
-    const canvas = document.createElement('canvas');
-    canvas.width = 16;
-    canvas.height = 16;
-    const ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
-    const t = this.skinResolution / 64;
-
-    if (this.itemSlotType === 'head') {
-      if (this.parts.body) {
-        // Head + Torso Hair
-        ctx.drawImage(this.skinImg, Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 2, 0, 12, 12);
-        ctx.drawImage(this.skinImg, Math.round(40 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 2, 0, 12, 12);
-        ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(20 * t), Math.round(8 * t), Math.round(4 * t), 2, 12, 12, 4);
-        ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(36 * t), Math.round(8 * t), Math.round(4 * t), 2, 12, 12, 4);
-      } else {
-        ctx.drawImage(this.skinImg, Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 0, 0, 16, 16);
-        ctx.drawImage(this.skinImg, Math.round(40 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 0, 0, 16, 16);
-      }
-    } else if (this.itemSlotType === 'legs') {
-      // Leg front (4x12 at x=0, y=20) + Pant layer (x=0, y=36)
-      ctx.drawImage(this.skinImg, Math.round(4 * t), Math.round(20 * t), Math.round(4 * t), Math.round(12 * t), 2, 2, 5, 12);
-      ctx.drawImage(this.skinImg, Math.round(4 * t), Math.round(36 * t), Math.round(4 * t), Math.round(12 * t), 2, 2, 5, 12);
-      ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(52 * t), Math.round(4 * t), Math.round(12 * t), 8, 2, 5, 12);
-      ctx.drawImage(this.skinImg, Math.round(4 * t), Math.round(52 * t), Math.round(4 * t), Math.round(12 * t), 8, 2, 5, 12);
-    } else if (this.itemSlotType === 'feet') {
-      // Boots / Feet area
-      ctx.drawImage(this.skinImg, Math.round(4 * t), Math.round(26 * t), Math.round(4 * t), Math.round(6 * t), 2, 6, 5, 8);
-      ctx.drawImage(this.skinImg, Math.round(4 * t), Math.round(42 * t), Math.round(4 * t), Math.round(6 * t), 2, 6, 5, 8);
-      ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(58 * t), Math.round(4 * t), Math.round(6 * t), 8, 6, 5, 8);
-      ctx.drawImage(this.skinImg, Math.round(4 * t), Math.round(58 * t), Math.round(4 * t), Math.round(6 * t), 8, 6, 5, 8);
-    } else {
-      // Torso front (8x12 at x=20, y=20) + Jacket outer layer (x=20, y=36)
-      ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(20 * t), Math.round(8 * t), Math.round(12 * t), 4, 2, 8, 12);
-      ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(36 * t), Math.round(8 * t), Math.round(12 * t), 4, 2, 8, 12);
-      // Right arm (4x12 at x=44, y=20) and Left arm (4x12 at x=36, y=52)
-      ctx.drawImage(this.skinImg, Math.round(44 * t), Math.round(20 * t), Math.round(4 * t), Math.round(12 * t), 0, 2, 4, 12);
-      ctx.drawImage(this.skinImg, Math.round(36 * t), Math.round(52 * t), Math.round(4 * t), Math.round(12 * t), 12, 2, 4, 12);
+    if (!this.hasCustomUploadedIcon) {
+      this.itemIconDataUrl = generateSlotItemIconDataUrl(this.skinImg, this.skinResolution, this.parts, this.itemSlotType);
     }
 
-    this.itemIconDataUrl = canvas.toDataURL('image/png');
+    const slotImg = document.getElementById('standalone-slot-icon-img');
+    const slotEmpty = document.getElementById('standalone-slot-icon-empty');
+    const slotStatus = document.getElementById('standalone-icon-status');
+
+    if (slotImg && slotEmpty) {
+      if (this.itemIconDataUrl) {
+        slotImg.src = this.itemIconDataUrl;
+        slotImg.style.display = 'block';
+        slotEmpty.style.display = 'none';
+        if (slotStatus) slotStatus.textContent = `มีรูปไอเทม (${this.itemSlotType.toUpperCase()})`;
+      } else {
+        slotImg.style.display = 'none';
+        slotEmpty.style.display = 'block';
+        if (slotStatus) slotStatus.textContent = 'ไม่มีรูปไอเทม (โปร่งใส)';
+      }
+    }
+
     const preview = document.getElementById('standalone-icon-preview');
     if (preview) {
-      preview.src = this.itemIconDataUrl;
-      preview.style.display = 'block';
-      const dropzone = document.getElementById('standalone-icon-dropzone');
-      if (dropzone) dropzone.style.display = 'none';
-      const removeBtn = document.getElementById('standalone-remove-icon-btn');
-      if (removeBtn) removeBtn.style.display = 'inline-flex';
+      preview.src = this.itemIconDataUrl || '';
+      preview.style.display = this.itemIconDataUrl ? 'block' : 'none';
     }
   }
 
   createHeadIconBlob() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 16;
-    canvas.height = 16;
-    const ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
-    const t = this.skinResolution / 64;
-
-    if (this.parts.body) {
-      // Head + Torso Hair
-      ctx.drawImage(this.skinImg, Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 2, 0, 12, 12);
-      ctx.drawImage(this.skinImg, Math.round(40 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 2, 0, 12, 12);
-      ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(20 * t), Math.round(8 * t), Math.round(4 * t), 2, 12, 12, 4);
-      ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(36 * t), Math.round(8 * t), Math.round(4 * t), 2, 12, 12, 4);
-    } else {
-      ctx.drawImage(this.skinImg, Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 0, 0, 16, 16);
-      ctx.drawImage(this.skinImg, Math.round(40 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 0, 0, 16, 16);
-    }
-    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    return generateSlotItemIconBlob(this.skinImg, this.skinResolution, { head: true, body: this.parts.body }, 'head');
   }
 
   createSuitIconBlob() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 16;
-    canvas.height = 16;
-    const ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
-    const t = this.skinResolution / 64;
-    ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(20 * t), Math.round(8 * t), Math.round(12 * t), 4, 2, 8, 12);
-    ctx.drawImage(this.skinImg, Math.round(20 * t), Math.round(36 * t), Math.round(8 * t), Math.round(12 * t), 4, 2, 8, 12);
-    ctx.drawImage(this.skinImg, Math.round(44 * t), Math.round(20 * t), Math.round(4 * t), Math.round(12 * t), 0, 2, 4, 12);
-    ctx.drawImage(this.skinImg, Math.round(36 * t), Math.round(52 * t), Math.round(4 * t), Math.round(12 * t), 12, 2, 4, 12);
-    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    return generateSlotItemIconBlob(this.skinImg, this.skinResolution, { body: true, arms: true }, 'suit');
   }
 
   async generateAddon() {
@@ -548,8 +478,7 @@ export class StandaloneAddonGenerator {
     }
 
     try {
-      showToast('กำลังสร้างแอดออน...', 'info');
-      const zip = new JSZip();
+      showToast('กำลังตรวจสอบและสร้างแอดออน...', 'info');
 
       // Clean ID base with random suffix to prevent collisions
       const safeSlug = (this.itemName || '')
@@ -562,18 +491,9 @@ export class StandaloneAddonGenerator {
 
       const uniqueSuffix = generateRandomId(6);
       const baseItemId = safeSlug ? `skin_${safeSlug}_${uniqueSuffix}` : `skin_${uniqueSuffix}`;
-      const bpUuid = generateUUID();
-      const rpUuid = generateUUID();
 
-      // Geometry identifier selection
-      let geometryIdentifier = 'geometry.humanoid.customSlim';
-      if (this.modelType === 1) geometryIdentifier = 'geometry.humanoid.custom';
-      if (this.modelType === 3 && this.customGeometryJson) {
-        geometryIdentifier = this.customGeometryJson['minecraft:geometry'][0].description.identifier;
-      }
-
-      // Configure item configurations (support head, suit, legs, feet, or both head & suit)
-      let itemConfigs = [];
+      // Build item configurations
+      let items = [];
       const slotMap = {
         head: { slot: 'slot.armor.head', group: 'itemGroup.name.helmet' },
         suit: { slot: 'slot.armor.chest', group: 'itemGroup.name.chestplate' },
@@ -582,230 +502,91 @@ export class StandaloneAddonGenerator {
       };
 
       if (this.itemSlotType === 'both') {
-        // Head piece (Head + body hair if user selected body)
         const headSkinBlob = await this.createSpecificSkinBlob({ head: true, body: this.parts.body, arms: false, legs: false });
-        itemConfigs.push({
+        const headIconBlob = await generateSlotItemIconBlob(this.skinImg, this.skinResolution, { head: true, body: this.parts.body }, 'head');
+        items.push({
           id: `${baseItemId}_head`,
           name: `${this.itemName} (หัว)`,
           slot: 'slot.armor.head',
           group: 'itemGroup.name.helmet',
-          skinBlob: headSkinBlob,
+          skinData: headSkinBlob,
+          iconData: headIconBlob,
           isHead: true
         });
-        // Suit piece (body + arms + legs)
+
         const suitSkinBlob = await this.createSpecificSkinBlob({ head: false, body: true, arms: this.parts.arms, legs: this.parts.legs });
-        itemConfigs.push({
+        let suitIconBlob;
+        if (this.hasCustomUploadedIcon && this.itemIconDataUrl) {
+          suitIconBlob = await (await fetch(this.itemIconDataUrl)).blob();
+        } else {
+          suitIconBlob = await generateSlotItemIconBlob(this.skinImg, this.skinResolution, { head: false, body: true, arms: this.parts.arms, legs: this.parts.legs }, 'suit');
+        }
+        items.push({
           id: `${baseItemId}_suit`,
           name: `${this.itemName} (ชุด)`,
           slot: 'slot.armor.chest',
           group: 'itemGroup.name.chestplate',
-          skinBlob: suitSkinBlob,
+          skinData: suitSkinBlob,
+          iconData: suitIconBlob,
           isHead: false
         });
       } else {
-        // Single unified item in user's chosen slot with EXACTLY the parts user selected!
         const currentSlot = slotMap[this.itemSlotType] || slotMap.head;
         const skinBlob = await this.createSpecificSkinBlob(this.parts);
-        itemConfigs.push({
+        let iconBlob;
+        if (this.hasCustomUploadedIcon && this.itemIconDataUrl) {
+          iconBlob = await (await fetch(this.itemIconDataUrl)).blob();
+        } else {
+          iconBlob = await generateSlotItemIconBlob(this.skinImg, this.skinResolution, this.parts, this.itemSlotType);
+        }
+
+        items.push({
           id: `${baseItemId}_${this.itemSlotType}`,
           name: this.itemName,
           slot: currentSlot.slot,
           group: currentSlot.group,
-          skinBlob: skinBlob,
+          skinData: skinBlob,
+          iconData: iconBlob,
           isHead: this.itemSlotType === 'head'
         });
       }
 
-      const bpFolder = `${this.addonName}_ZirconX-SKIN_BP`;
-      const rpFolder = `${this.addonName}_ZirconX-SKIN_RP`;
-
-      // 1. Behavior Pack Items (Unbreakable & Zero Protection)
-      itemConfigs.forEach(item => {
-        const itemJson = {
-          format_version: "1.21.10",
-          "minecraft:item": {
-            description: {
-              identifier: `zirconx:${item.id}`,
-              menu_category: {
-                category: "equipment",
-                group: item.group
-              }
-            },
-            components: {
-              "minecraft:icon": item.id,
-              "minecraft:max_stack_size": 1,
-              "minecraft:wearable": {
-                slot: item.slot,
-                protection: 0
-              },
-              "minecraft:display_name": {
-                value: item.name
-              }
-              // No minecraft:durability component = Unbreakable (ไม่มีวันพัง)
-            }
-          }
-        };
-        zip.file(`${bpFolder}/items/${item.id}.json`, JSON.stringify(itemJson, null, 2));
-      });
-
-      // Manifests
-      const bpManifest = {
-        format_version: 2,
-        header: {
-          name: `${this.addonName} | สกินไอเทม ${this.addonVersion.join(".")}`,
-          description: "แอดออนสกินสวมใส่ สร้างโดย ZirconX Skin Project",
-          min_engine_version: [1, 21, 60],
-          uuid: bpUuid,
-          version: this.addonVersion
-        },
-        modules: [{
-          type: "data",
-          uuid: generateUUID(),
-          version: this.addonVersion
-        }],
-        dependencies: [{
-          uuid: rpUuid,
-          version: this.addonVersion
-        }]
-      };
-      zip.file(`${bpFolder}/manifest.json`, JSON.stringify(bpManifest, null, 2));
-
-      // 2. Resource Pack Custom Render Controller & Attachables
-      // Custom render controller ensures Bedrock doesn't forcibly hide the torso/body when equipped in helmet slot!
-      const customRenderController = {
-        format_version: "1.10.0",
-        render_controllers: {
-          "controller.render.zirconx_skin": {
-            geometry: "geometry.default",
-            materials: [{ "*": "material.default" }],
-            textures: ["texture.default"]
-          }
-        }
-      };
-      zip.file(`${rpFolder}/render_controllers/zirconx_skin.json`, JSON.stringify(customRenderController, null, 2));
-
-      const itemTextureJson = {
-        resource_pack_name: this.addonName,
-        texture_name: "atlas.items",
-        texture_data: {}
-      };
-
-      for (const item of itemConfigs) {
-        const attachableJson = {
-          format_version: "1.10.0",
-          "minecraft:attachable": {
-            description: {
-              identifier: `zirconx:${item.id}`,
-              materials: {
-                default: "entity_alphatest",
-                enchanted: "entity_alphatest"
-              },
-              textures: {
-                default: `textures/skin/${item.id}`,
-                enchanted: "textures/misc/enchanted_item_glint"
-              },
-              geometry: {
-                default: geometryIdentifier
-              },
-              render_controllers: ["controller.render.zirconx_skin"]
-            }
-          }
-        };
-        zip.file(`${rpFolder}/attachables/${item.id}.json`, JSON.stringify(attachableJson, null, 2));
-
-        // Texture data for atlas
-        itemTextureJson.texture_data[item.id] = {
-          textures: [`textures/items/zirconx/${item.id}`]
-        };
-
-        // Add skin texture
-        zip.file(`${rpFolder}/textures/skin/${item.id}.png`, item.skinBlob);
-
-        // Add item icon (100% derived from uploaded skin)
-        if (this.itemIconDataUrl && !item.isHead && this.itemSlotType === 'both') {
-          const suitIconBlob = await this.createSuitIconBlob();
-          zip.file(`${rpFolder}/textures/items/zirconx/${item.id}.png`, suitIconBlob);
-        } else if (this.itemIconDataUrl) {
-          const iconBlob = await (await fetch(this.itemIconDataUrl)).blob();
-          zip.file(`${rpFolder}/textures/items/zirconx/${item.id}.png`, iconBlob);
-        } else if (item.isHead) {
-          const headBlob = await this.createHeadIconBlob();
-          zip.file(`${rpFolder}/textures/items/zirconx/${item.id}.png`, headBlob);
-        } else {
-          const suitBlob = await this.createSuitIconBlob();
-          zip.file(`${rpFolder}/textures/items/zirconx/${item.id}.png`, suitBlob);
-        }
-      }
-
-      zip.file(`${rpFolder}/textures/item_texture.json`, JSON.stringify(itemTextureJson, null, 2));
-
-      const rpManifest = {
-        format_version: 2,
-        header: {
-          name: `${this.addonName} | สกินไอเทม ${this.addonVersion.join(".")}`,
-          description: "แอดออนสกินสวมใส่ สร้างโดย ZirconX Skin Project",
-          min_engine_version: [1, 21, 60],
-          uuid: rpUuid,
-          version: this.addonVersion
-        },
-        modules: [{
-          type: "resources",
-          uuid: generateUUID(),
-          version: this.addonVersion
-        }],
-        dependencies: [{
-          uuid: bpUuid,
-          version: this.addonVersion
-        }]
-      };
-      zip.file(`${rpFolder}/manifest.json`, JSON.stringify(rpManifest, null, 2));
-
-      // Custom geometry if selected
-      if (this.modelType === 3 && this.customGeometryJson) {
-        const geoFileName = geometryIdentifier.replace('geometry.', '') + '.json';
-        zip.file(`${rpFolder}/models/entity/${geoFileName}`, JSON.stringify(this.customGeometryJson, null, 2));
-      }
-
-      // 3. Language & Localization (texts/) for Thai and English display names
-      const langLines = [
-        `## ZirconX Skin Project Item Localization`,
-        `pack.name=${this.addonName} | สกินไอเทม ${this.addonVersion.join(".")}`,
-        `pack.description=แอดออนสกินสวมใส่ สร้างโดย ZirconX Skin Project`
-      ];
-
-      for (const item of itemConfigs) {
-        langLines.push(`item.zirconx:${item.id}.name=${item.name}`);
-        langLines.push(`item.zirconx:${item.id}=${item.name}`);
-      }
-
-      const langContent = langLines.join('\n') + '\n';
-      const languagesJson = JSON.stringify(['en_US', 'th_TH'], null, 2);
-
-      // Add to Resource Pack
-      zip.file(`${rpFolder}/texts/en_US.lang`, langContent);
-      zip.file(`${rpFolder}/texts/th_TH.lang`, langContent);
-      zip.file(`${rpFolder}/texts/languages.json`, languagesJson);
-
-      // Add to Behavior Pack
-      zip.file(`${bpFolder}/texts/en_US.lang`, langContent);
-      zip.file(`${bpFolder}/texts/th_TH.lang`, langContent);
-      zip.file(`${bpFolder}/texts/languages.json`, languagesJson);
-
-      // Add pack icon
+      // Fetch pack icon if available
+      let packIconData = null;
       try {
-        const packIcon = await (await fetch(`${import.meta.env.BASE_URL}templates/packicon.png`)).blob();
-        zip.file(`${bpFolder}/pack_icon.png`, packIcon);
-        zip.file(`${rpFolder}/pack_icon.png`, packIcon);
+        packIconData = await (await fetch(`${import.meta.env.BASE_URL}templates/packicon.png`)).blob();
       } catch (_) {}
 
-      // Generate & download .mcaddon
-      const mcaddonBlob = await zip.generateAsync({ type: "blob" });
-      saveAs(mcaddonBlob, `${this.addonName}_v${this.addonVersion.join("_")}.mcaddon`);
+      // 1. Generate In-Memory Addon via Headless Core Generator (CORE-001)
+      const generated = await createStandaloneSkinAddon({
+        addonName: this.addonName,
+        itemName: this.itemName,
+        addonVersion: this.addonVersion,
+        itemSlotType: this.itemSlotType,
+        modelType: this.modelType,
+        customGeometryJson: this.customGeometryJson,
+        items,
+        packIconData
+      });
+
+      // 2. Pre-Export Validation (CORE-002)
+      const validationReport = await validateAddonPackage(generated.zip);
+
+      if (!validationReport.valid) {
+        console.error('Validation failed:', validationReport.errors);
+        showToast(`ตรวจสอบพบข้อผิดพลาด: ${validationReport.errors[0]}`, 'error');
+        return;
+      }
+
+      // 3. Serializer & Download
+      const mcaddonBlob = await generated.zip.generateAsync({ type: 'blob' });
+      saveAs(mcaddonBlob, `${this.addonName}_v${this.addonVersion.join('_')}.mcaddon`);
+
       sfx.playLevelUp();
-      showToast('ดาวน์โหลดแอดออนเรียบร้อย', 'success');
+      showToast('✓ ตรวจสอบความถูกต้องผ่าน ดาวน์โหลดสำเร็จ!', 'success');
     } catch (err) {
       console.error(err);
-      showToast('เกิดข้อผิดพลาดในการสร้างแอดออน', 'error');
+      showToast(err.userMessage || err.message || 'เกิดข้อผิดพลาดในการสร้างแอดออน', 'error');
     }
   }
 }

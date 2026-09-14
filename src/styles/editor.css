@@ -1,0 +1,137 @@
+/* ==========================================================================
+   SKIN EDITOR & PART CONTROLS — MINECRAFT BEDROCK EDITION
+   ========================================================================== */
+
+/* Preset Chips (Horizontal Scrollable Pills) */
+.preset-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.2rem 0.2rem 0.65rem;
+  margin-bottom: 1.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--mc-border-light) transparent;
+}
+
+.preset-chip {
+  flex-shrink: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--mc-border-light);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.05), inset -1px -1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.preset-chip:hover {
+  color: #ffffff;
+  border-color: var(--mc-green);
+  background: var(--bg-panel-elevated);
+}
+
+.preset-chip.active {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: var(--mc-green);
+  color: var(--mc-green);
+  font-weight: 800;
+  box-shadow: 0 0 12px var(--mc-green-glow), inset 1px 1px 0 rgba(34, 197, 94, 0.2);
+}
+
+.preset-chip:active {
+  transform: translateY(1px);
+}
+
+/* 4-Part Toggle Grid (Minecraft Armor Stand Slot Style) */
+.part-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+.part-toggle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface);
+  border: 2px solid var(--mc-border-mid);
+  border-radius: var(--r-xs);
+  padding: 0.8rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.05), inset -1px -1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.part-toggle-item:hover {
+  border-color: var(--mc-border-light);
+  color: #ffffff;
+  background: var(--bg-panel);
+}
+
+.part-toggle-item.checked {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: var(--mc-green);
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(34, 197, 94, 0.2), inset 1px 1px 0 rgba(34, 197, 94, 0.2);
+}
+
+.part-toggle-item input {
+  accent-color: var(--mc-green);
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Slot & Model Pickers (Minecraft Beveled 3D Buttons) */
+.slot-select-grid,
+.model-select-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+.slot-select-btn,
+.model-select-btn {
+  background: var(--bg-surface);
+  border: 2px solid var(--mc-border-mid);
+  border-radius: var(--r-xs);
+  padding: 0.85rem 0.75rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.06), inset -1px -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.slot-select-btn:hover,
+.model-select-btn:hover {
+  border-color: var(--mc-border-light);
+  color: #ffffff;
+  background: var(--bg-panel);
+}
+
+.slot-select-btn.active,
+.model-select-btn.active {
+  background: #253328;
+  border-color: var(--mc-green);
+  color: var(--mc-green);
+  box-shadow: 0 0 16px var(--mc-green-glow), inset 1px 1px 0 rgba(34, 197, 94, 0.3);
+}
+
+.slot-select-btn:active,
+.model-select-btn:active {
+  transform: translateY(1px);
+}

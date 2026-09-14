@@ -5,7 +5,7 @@
 import './style.css';
 import { HidePartEditor } from './modules/hidepart.js';
 import { StandaloneAddonGenerator } from './modules/standalone.js';
-import { WardrobeMultiEditor } from './modules/multieditor.js';
+import { WardrobeMultiEditor } from './modules/wardrobe.js';
 import { initMinecraftFireParticles } from './modules/mcfire.js';
 import { sfx } from './modules/sfx.js';
 import { showToast } from './modules/utils.js';
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentTab = 'home';
 
   // 3. Navigation Tabs Switcher (Desktop & Mobile)
-  const tabButtons = document.querySelectorAll('.nav-tab-btn, .mobile-nav-item');
+  const tabButtons = document.querySelectorAll('.nav-tab-btn, .mobile-nav-item, .stage-nav-item, .desktop-nav-btn');
   const sections = document.querySelectorAll('.page-section');
 
   function switchTab(targetTabId) {
@@ -68,7 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
     sfx.playClick();
 
     tabButtons.forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.tab === targetTabId);
+      const isTarget = btn.dataset.tab === targetTabId || btn.dataset.goto === targetTabId;
+      btn.classList.toggle('active', isTarget);
     });
 
     sections.forEach(sec => {
@@ -98,11 +99,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Feature Card Links on Home
   document.querySelectorAll('[data-goto]').forEach(el => {
-    el.addEventListener('click', () => {
+    el.addEventListener('click', (e) => {
+      // Prevent parent trigger if child also has data-goto
+      e.stopPropagation();
       const target = el.dataset.goto;
-      switchTab(target);
+      if (target) switchTab(target);
     });
   });
+
+  // 3.1 Dragon Year NEWEST Circular Buttons & Slider Track Controller
+  const circlePrevBtn = document.getElementById('circle-nav-prev');
+  const circleNextBtn = document.getElementById('circle-nav-next');
+  const slideCards = document.querySelectorAll('.newest-slide-card');
+  const indicatorDots = document.querySelectorAll('.indicator-dot');
+  let currentSlide = 0;
+  const totalSlides = slideCards.length;
+
+  function setActiveSlide(index) {
+    if (totalSlides === 0) return;
+    currentSlide = (index + totalSlides) % totalSlides;
+
+    slideCards.forEach((card, idx) => {
+      const isActive = idx === currentSlide;
+      card.classList.toggle('active', isActive);
+      if (isActive) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    });
+
+    indicatorDots.forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === currentSlide);
+    });
+  }
+
+  if (circlePrevBtn) {
+    circlePrevBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sfx.playClick();
+      setActiveSlide(currentSlide - 1);
+    });
+  }
+
+  if (circleNextBtn) {
+    circleNextBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sfx.playClick();
+      setActiveSlide(currentSlide + 1);
+    });
+  }
+
+  indicatorDots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const idx = parseInt(dot.dataset.idx, 10);
+      sfx.playClick();
+      setActiveSlide(idx);
+    });
+  });
+
 
   // 4. Sound Effects (SFX) Toggle
   const sfxToggleBtn = document.getElementById('sfx-toggle-btn');
@@ -213,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Global button click SFX
   document.addEventListener('click', (e) => {
-    const target = e.target.closest('button, .tool-card, .preset-chip, .slot-select-btn, .model-select-btn');
+    const target = e.target.closest('button, .tool-card, .mc-tool-card, .preset-chip, .slot-select-btn, .model-select-btn, .part-toggle-item');
     if (target && !target.id?.includes('sfx-toggle')) {
       sfx.playClick();
     }

@@ -3,8 +3,9 @@
  * Supports 3D Real-time Preview, Steve/Alex Models, One-Click Presets, Direct PNG Download & ZIP/MCPACK Extraction
  */
 import { processSkinResolution, detectSlimModel, showToast } from './utils.js';
-import { isZipArchive, extractSkinFromArchive } from './ziphandler.js';
+import { isZipArchive, extractSkinFromArchive } from './zip.js';
 import { sfx } from './sfx.js';
+import { getPartUVRectangles, applyPartClippingToContext } from '../core/skin/skinProcessor.js';
 import * as skinview3d from 'skinview3d';
 
 export class HidePartEditor {
@@ -171,36 +172,7 @@ export class HidePartEditor {
   }
 
   getPartRectangles() {
-    const t = this.resolution / 64;
-    const r = (x, y, w, h) => ({
-      x: Math.round(x * t),
-      y: Math.round(y * t),
-      w: Math.round(w * t),
-      h: Math.round(h * t)
-    });
-
-    return {
-      head: [
-        r(0, 0, 32, 16),   // inner head
-        r(32, 0, 32, 16)   // outer hat
-      ],
-      body: [
-        r(16, 16, 24, 16), // inner torso
-        r(16, 32, 24, 16)  // outer jacket
-      ],
-      arms: [
-        r(40, 16, 16, 16), // right arm inner
-        r(40, 32, 16, 16), // right arm outer
-        r(32, 48, 16, 16), // left arm inner
-        r(48, 48, 16, 16)  // left arm outer
-      ],
-      legs: [
-        r(0, 16, 16, 16),  // right leg inner
-        r(0, 32, 16, 16),  // right leg outer
-        r(16, 48, 16, 16), // left leg inner
-        r(0, 48, 16, 16)   // left leg outer
-      ]
-    };
+    return getPartUVRectangles(this.resolution);
   }
 
   applyPreset(preset) {
@@ -341,13 +313,8 @@ export class HidePartEditor {
     this.ctx.imageSmoothingEnabled = false;
     this.ctx.drawImage(this.originalImg, 0, 0, this.resolution, this.resolution);
 
-    const rects = this.getPartRectangles();
-
-    // Erase unchecked parts completely
-    if (!this.parts.head) rects.head.forEach(r => this.ctx.clearRect(r.x, r.y, r.w, r.h));
-    if (!this.parts.body) rects.body.forEach(r => this.ctx.clearRect(r.x, r.y, r.w, r.h));
-    if (!this.parts.arms) rects.arms.forEach(r => this.ctx.clearRect(r.x, r.y, r.w, r.h));
-    if (!this.parts.legs) rects.legs.forEach(r => this.ctx.clearRect(r.x, r.y, r.w, r.h));
+    // Erase unchecked parts completely (both inner base and outer overlay)
+    applyPartClippingToContext(this.ctx, this.resolution, this.parts);
 
     // Update 3D viewer & Blob URL with transparent cutouts
     this.canvas.toBlob(blob => {

@@ -1,0 +1,152 @@
+/* ==========================================================================
+   ZIRCONX SKIN STUDIO — MINECRAFT BEDROCK DESIGN SYSTEM & TOKENS
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Silkscreen:wght@400;700&display=swap');
+
+:root {
+  /* Typography */
+  --font-pixel: 'Silkscreen', monospace;
+  --font-heading: 'Cinzel', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Minecraft Dark Deepslate & Bedrock Palette */
+  --bg-app: #121318;
+  --bg-surface: #181a20;
+  --bg-panel: #20232a;
+  --bg-panel-elevated: #282c35;
+  --bg-card: #22252e;
+  --bg-card-hover: #2a2e39;
+  --bg-header: rgba(18, 19, 24, 0.92);
+  --bg-input: #15171d;
+
+  /* Minecraft GUI Bevel & Borders */
+  --mc-border-dark: #0e0f14;
+  --mc-border-light: #3e434f;
+  --mc-border-mid: #2c303a;
+  --mc-bevel-light: #4c5260;
+  --mc-bevel-dark: #0a0b0e;
+
+  /* Minecraft Signature Color Accents */
+  --mc-green: #22c55e;
+  --mc-green-glow: rgba(34, 197, 94, 0.35);
+  --mc-emerald: #10b981;
+  --mc-diamond: #38bdf8;
+  --mc-diamond-glow: rgba(56, 189, 248, 0.35);
+  --mc-gold: #f59e0b;
+  --mc-gold-glow: rgba(245, 158, 11, 0.35);
+  --mc-redstone: #ef4444;
+  --mc-redstone-glow: rgba(239, 68, 68, 0.35);
+  --mc-netherite: #7c3aed;
+  --mc-netherite-glow: rgba(124, 58, 237, 0.35);
+
+  /* Primary Brand — Minecraft Bedrock Emerald / Dragon Redstone Accent */
+  --primary: #22c55e;
+  --primary-bright: #4ade80;
+  --primary-dark: #16a34a;
+  --primary-glow: rgba(34, 197, 94, 0.3);
+
+  --accent-red: #ef4444;
+  --accent-gold: #f59e0b;
+  --accent-blue: #38bdf8;
+
+  /* Text Colors */
+  --text-main: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --text-dim: #4b5563;
+  --text-mc-green: #4ade80;
+  --text-mc-gold: #fbbf24;
+  --text-mc-diamond: #38bdf8;
+  --text-mc-red: #f87171;
+
+  /* Minecraft Radii (Sharp & Pixelated or Clean 4-8px) */
+  --r-pixel: 0px;
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+  --r-full: 9999px;
+
+  /* Box Shadows & Bevels */
+  --shadow-mc-button: inset 2px 2px 0 var(--mc-bevel-light), inset -2px -2px 0 var(--mc-bevel-dark), 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-mc-pressed: inset 2px 2px 0 var(--mc-bevel-dark), inset -2px -2px 0 var(--mc-bevel-light);
+  --shadow-panel: 0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-glow-green: 0 0 20px rgba(34, 197, 94, 0.25);
+  --shadow-glow-gold: 0 0 20px rgba(245, 158, 11, 0.25);
+
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  background-color: var(--bg-app);
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  min-height: 100vh;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+  position: relative;
+  /* Minecraft subtle dark bedrock grid pattern */
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 100% 60%, rgba(245, 158, 11, 0.04) 0%, transparent 50%);
+  background-size: 32px 32px, 32px 32px, 100% 100%, 100% 100%;
+  background-attachment: fixed;
+}
+
+/* Scrollbar Styling — Minecraft Deepslate */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-app);
+}
+::-webkit-scrollbar-thumb {
+  background: #2e333d;
+  border-radius: 4px;
+  border: 1px solid var(--mc-border-dark);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3e4452;
+}
+
+/* App Container */
+.app-container {
+  width: 100%;
+  max-width: 1140px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(84px + var(--safe-bottom));
+  position: relative;
+  margin: 0 auto;
+}
+
+@media (min-width: 821px) {
+  .app-container {
+    padding-bottom: 2.5rem;
+  }
+}
