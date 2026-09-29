@@ -35,6 +35,8 @@ export class WardrobeMultiEditor {
     this.packName = 'ชุดสกินของฉัน';
     this.version = [1, 0, 0];
     this.skins = [];
+    this.inspectIndex = -1;
+    this.inspectViewer = null;
 
     this.init();
   }
@@ -121,6 +123,156 @@ export class WardrobeMultiEditor {
       exportBtn.addEventListener('click', () => this.exportMcpack());
     }
 
+    // 7. Wardrobe 3D Inspect Modal bindings
+    const modalEl = document.getElementById('wardrobe-inspect-modal');
+    const closeBtn = document.getElementById('wardrobe-inspect-close-btn');
+    const saveBtn = document.getElementById('wardrobe-inspect-save-btn');
+    const deleteBtn = document.getElementById('wardrobe-inspect-delete-btn');
+    const nameInputModal = document.getElementById('wardrobe-inspect-name-input');
+    const camResetBtn = document.getElementById('wardrobe-inspect-cam-reset');
+
+    if (closeBtn) closeBtn.addEventListener('click', () => this.closeInspectModal());
+    if (saveBtn) saveBtn.addEventListener('click', () => this.closeInspectModal());
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', () => {
+        if (this.inspectIndex >= 0 && this.inspectIndex < this.skins.length) {
+          sfx.playClick();
+          this.skins.splice(this.inspectIndex, 1);
+          this.closeInspectModal();
+          showToast('ลบสกินเรียบร้อย', 'info');
+        }
+      });
+    }
+
+    if (modalEl) {
+      modalEl.addEventListener('click', (e) => {
+        if (e.target === modalEl) this.closeInspectModal();
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modalEl && modalEl.style.display !== 'none') {
+        this.closeInspectModal();
+      }
+    });
+
+    if (nameInputModal) {
+      nameInputModal.addEventListener('input', (e) => {
+        if (this.inspectIndex >= 0 && this.inspectIndex < this.skins.length) {
+          this.skins[this.inspectIndex].name = e.target.value.trim() || `Skin ${this.inspectIndex + 1}`;
+        }
+      });
+    }
+
+    // Modal Model Toggle (Steve/Alex)
+    document.querySelectorAll('.wardrobe-inspect-model-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const m = btn.dataset.model;
+        if (this.inspectIndex >= 0 && this.inspectIndex < this.skins.length) {
+          this.skins[this.inspectIndex].model = m;
+          document.querySelectorAll('.wardrobe-inspect-model-btn').forEach(b => b.classList.toggle('active', b.dataset.model === m));
+          if (this.inspectViewer) {
+            this.inspectViewer.loadSkin(this.skins[this.inspectIndex].skinURL, {
+              model: m === 'alex' ? 'slim' : 'default'
+            });
+          }
+          sfx.playClick();
+        }
+      });
+    });
+
+    // Modal Animation Toggle (Walk/Run/Idle)
+    document.querySelectorAll('.wardrobe-inspect-anim-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const anim = btn.dataset.anim;
+        document.querySelectorAll('.wardrobe-inspect-anim-btn').forEach(b => b.classList.toggle('active', b.dataset.anim === anim));
+        if (this.inspectViewer) {
+          if (anim === 'walk') {
+            this.inspectViewer.animation = new skinview3d.WalkingAnimation();
+            this.inspectViewer.animation.speed = 0.6;
+          } else if (anim === 'run') {
+            this.inspectViewer.animation = new skinview3d.RunningAnimation();
+            this.inspectViewer.animation.speed = 0.8;
+          } else {
+            this.inspectViewer.animation = null;
+          }
+        }
+        sfx.playClick();
+      });
+    });
+
+    if (camResetBtn) {
+      camResetBtn.addEventListener('click', () => {
+        sfx.playClick();
+        if (this.inspectViewer) {
+          this.inspectViewer.camera.position.set(0, 0, 70);
+          this.inspectViewer.camera.lookAt(0, 0, 0);
+        }
+      });
+    }
+
+    this.renderSkinList();
+  }
+
+  openInspectModal(index) {
+    const skin = this.skins[index];
+    if (!skin) return;
+
+    this.inspectIndex = index;
+    const modalEl = document.getElementById('wardrobe-inspect-modal');
+    const titleEl = document.getElementById('wardrobe-inspect-title');
+    const nameInput = document.getElementById('wardrobe-inspect-name-input');
+    const container = document.getElementById('wardrobe-inspect-3d-container');
+    const canvas = document.getElementById('wardrobe-inspect-3d-canvas');
+
+    if (titleEl) titleEl.textContent = `ตรวจสอบ: ${skin.name}`;
+    if (nameInput) nameInput.value = skin.name;
+
+    // Sync Model buttons
+    document.querySelectorAll('.wardrobe-inspect-model-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.model === skin.model);
+    });
+
+    if (modalEl) modalEl.style.display = 'flex';
+
+    // Init or update viewer
+    setTimeout(() => {
+      if (!this.inspectViewer && container && canvas) {
+        this.inspectViewer = new skinview3d.SkinViewer({
+          canvas,
+          width: container.clientWidth || 360,
+          height: 280
+        });
+        if (this.inspectViewer.renderer) {
+          this.inspectViewer.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        }
+        this.inspectViewer.camera.position.set(0, 0, 70);
+        this.inspectViewer.animation = new skinview3d.WalkingAnimation();
+        this.inspectViewer.animation.speed = 0.6;
+      } else if (this.inspectViewer && container) {
+        this.inspectViewer.width = container.clientWidth || 360;
+      }
+
+      if (this.inspectViewer) {
+        if (this.inspectViewer.animation) {
+          this.inspectViewer.animation.paused = false;
+        }
+        this.inspectViewer.loadSkin(skin.skinURL, {
+          model: skin.model === 'alex' ? 'slim' : 'default'
+        });
+      }
+    }, 50);
+
+    sfx.playClick();
+  }
+
+  closeInspectModal() {
+    const modalEl = document.getElementById('wardrobe-inspect-modal');
+    if (modalEl) modalEl.style.display = 'none';
+    if (this.inspectViewer && this.inspectViewer.animation) {
+      this.inspectViewer.animation.paused = true;
+    }
+    this.inspectIndex = -1;
     this.renderSkinList();
   }
 
@@ -247,7 +399,7 @@ export class WardrobeMultiEditor {
       card.className = 'skinpack-card';
 
       card.innerHTML = `
-        <div class="skinpack-card-avatar-wrap">
+        <div class="skinpack-card-avatar-wrap" title="คลิกเพื่อหมุนดูโมเดล 3D" data-inspect="${index}">
           <img src="${skin.faceUrl || skin.skinURL}" alt="${skin.name}" class="skinpack-card-avatar">
           <span class="skinpack-model-pill ${skin.model}">${skin.model === 'alex' ? 'Alex 3px' : 'Steve 4px'}</span>
         </div>
@@ -262,6 +414,10 @@ export class WardrobeMultiEditor {
                 Alex (3px)
               </button>
             </div>
+            <button type="button" class="skinpack-inspect-btn" title="หมุนดูโมเดล 3D" data-inspect="${index}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span>3D</span>
+            </button>
             <button type="button" class="skinpack-del-btn" title="ลบชุดนี้" data-del="${index}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <polyline points="3 6 5 6 21 6"></polyline>
@@ -271,6 +427,14 @@ export class WardrobeMultiEditor {
           </div>
         </div>
       `;
+
+      // 3D Inspect trigger (avatar & 3D button)
+      card.querySelectorAll(`[data-inspect="${index}"]`).forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.openInspectModal(index);
+        });
+      });
 
       // Name change listener
       const nameInput = card.querySelector('.skinpack-name-input');

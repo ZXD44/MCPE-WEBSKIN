@@ -234,9 +234,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Global button click SFX
   document.addEventListener('click', (e) => {
-    const target = e.target.closest('button, .tool-card, .mc-tool-card, .preset-chip, .slot-select-btn, .model-select-btn, .part-toggle-item');
+    const target = e.target.closest('button, .tool-card, .mc-tool-card, .preset-chip, .slot-select-btn, .model-select-btn, .part-toggle-item, .skinpack-inspect-btn, .skinpack-model-toggle');
     if (target && !target.id?.includes('sfx-toggle')) {
       sfx.playClick();
     }
+  });
+
+  // 7. PWA Service Worker Registration & Offline Support
+  if ('serviceWorker' in navigator && (window.location.protocol.startsWith('http') || window.location.protocol === 'https:')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((reg) => {
+          console.log('[PWA] Service Worker registered:', reg.scope);
+        })
+        .catch((err) => {
+          console.warn('[PWA] Service Worker registration failed:', err);
+        });
+    });
+  }
+
+  // 8. PWA Install Prompt Handler
+  let deferredInstallPrompt = null;
+  const pwaInstallBtn = document.getElementById('pwa-install-btn');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (pwaInstallBtn) {
+      pwaInstallBtn.style.display = 'inline-flex';
+    }
+  });
+
+  if (pwaInstallBtn) {
+    pwaInstallBtn.addEventListener('click', async () => {
+      sfx.playClick();
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      const choiceResult = await deferredInstallPrompt.userChoice;
+      if (choiceResult.outcome === 'accepted') {
+        showToast('กำลังติดตั้งแอป ZirconX Studio...', 'success');
+        pwaInstallBtn.style.display = 'none';
+      }
+      deferredInstallPrompt = null;
+    });
+  }
+
+  window.addEventListener('appinstalled', () => {
+    showToast('ติดตั้งแอปสำเร็จ! ใช้งานออฟไลน์ได้ทันที 🎉', 'success');
+    if (pwaInstallBtn) pwaInstallBtn.style.display = 'none';
   });
 });
