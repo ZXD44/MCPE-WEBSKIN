@@ -253,14 +253,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 8. PWA Install Prompt Handler
+  // 8. PWA Install Prompt Handler & iOS Support
   let deferredInstallPrompt = null;
   const pwaInstallBtn = document.getElementById('pwa-install-btn');
+
+  // Detect iOS Safari & Standalone Display Mode
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  const isIos = /iphone|ipad|ipod/.test(userAgent);
+  const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+  // Show install button on iOS if not already running in standalone mode
+  if (isIos && !isStandalone && pwaInstallBtn) {
+    pwaInstallBtn.style.display = 'inline-flex';
+  }
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredInstallPrompt = e;
-    if (pwaInstallBtn) {
+    if (pwaInstallBtn && !isStandalone) {
       pwaInstallBtn.style.display = 'inline-flex';
     }
   });
@@ -268,14 +278,22 @@ document.addEventListener('DOMContentLoaded', () => {
   if (pwaInstallBtn) {
     pwaInstallBtn.addEventListener('click', async () => {
       sfx.playClick();
-      if (!deferredInstallPrompt) return;
-      deferredInstallPrompt.prompt();
-      const choiceResult = await deferredInstallPrompt.userChoice;
-      if (choiceResult.outcome === 'accepted') {
-        showToast('กำลังติดตั้งแอป ZirconX Studio...', 'success');
-        pwaInstallBtn.style.display = 'none';
+
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const choiceResult = await deferredInstallPrompt.userChoice;
+        if (choiceResult.outcome === 'accepted') {
+          showToast('กำลังติดตั้งแอป ZirconX Studio...', 'success');
+          pwaInstallBtn.style.display = 'none';
+        }
+        deferredInstallPrompt = null;
+      } else if (isIos) {
+        showToast('แตะปุ่มแชร์ [⎙] ใน Safari แล้วเลือก "เพิ่มไปยังหน้าจอโฮม"', 'info');
+      } else if (isStandalone) {
+        showToast('คุณกำลังใช้งานในโหมดแอปอยู่แล้ว 🎉', 'info');
+      } else {
+        showToast('เปิดเมนูเบราว์เซอร์ (⋮) แล้วเลือก "ติดตั้งแอป" หรือ "เพิ่มลงหน้าจอหลัก"', 'info');
       }
-      deferredInstallPrompt = null;
     });
   }
 

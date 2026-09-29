@@ -624,36 +624,118 @@
 }
 
 /* ==========================================================================
-   PWA INSTALL BUTTON
+   PWA INSTALL BUTTON — MINECRAFT RESPONSIVE PILL
    ========================================================================== */
 .pwa-install-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.65rem;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  color: #38bdf8;
+  justify-content: center;
+  gap: 0.45rem;
+  height: 34px;
+  width: auto !important;
+  min-width: 34px;
+  padding: 0 0.75rem;
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.22) 0%, rgba(21, 128, 61, 0.3) 100%);
+  border: 1px solid #22c55e;
+  color: #4ade80;
   border-radius: var(--r-xs);
   font-family: var(--font-pixel), var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 800;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.15), 0 2px 8px rgba(34, 197, 94, 0.2);
+  white-space: nowrap;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.pwa-install-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: pwaShine 3.2s infinite ease-in-out;
+}
+
+@keyframes pwaShine {
+  0% { left: -100%; }
+  25%, 100% { left: 100%; }
 }
 
 .pwa-install-btn:hover {
-  background: rgba(56, 189, 248, 0.22);
-  border-color: #38bdf8;
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.35) 0%, rgba(21, 128, 61, 0.45) 100%);
+  border-color: #86efac;
+  color: #ffffff;
   transform: translateY(-1px);
+  box-shadow: 0 0 16px var(--mc-green-glow), inset 1px 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.pwa-install-btn:active {
+  transform: translateY(1px);
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.pwa-install-btn svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.pwa-install-btn:hover svg {
+  transform: scale(1.15) translateY(-1px);
+}
+
+.pwa-install-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  animation: pwaPulse 1.8s infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pwaPulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 12px #4ade80; }
 }
 
 .pwa-install-text {
-  display: inline-block;
+  line-height: 1;
 }
 
-@media (max-width: 480px) {
-  .pwa-install-text {
+@media (max-width: 640px) {
+  .pwa-install-btn {
+    height: 32px;
+    padding: 0 0.55rem;
+    font-size: 0.7rem;
+    gap: 0.35rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .pwa-install-btn {
+    padding: 0 0.45rem;
+  }
+  .pwa-install-text-full {
+    display: none;
+  }
+  .pwa-install-text-short {
+    display: inline-block;
+  }
+}
+
+@media (min-width: 421px) {
+  .pwa-install-text-full {
+    display: inline-block;
+  }
+  .pwa-install-text-short {
     display: none;
   }
 }
