@@ -15,6 +15,9 @@
 7. [ระบบเสียงสังเคราะห์ Minecraft SFX (Web Audio API)](#7-ระบบเสียงสังเคราะห์-minecraft-sfx-web-audio-api)
 8. [ระบบละอองไฟ Minecraft Motes (Pixel Flame Particles)](#8-ระบบละอองไฟ-minecraft-motes-pixel-flame-particles)
 9. [มาตรฐานไฟล์และการประมวลผลสกิน (Skin Resolution & UV Layout)](#9-มาตรฐานไฟล์และการประมวลผลสกิน-skin-resolution--uv-layout)
+10. [ระบบอุปกรณ์เสริม 3D (3D Cosmetics & Modular Accessories)](#10-ระบบอุปกรณ์เสริม-3d-3d-cosmetics--modular-accessories)
+11. [ระบบนำเข้า Blockbench (.geo.json)](#11-ระบบนำเข้า-blockbench-geojson)
+12. [ระบบ PWA Offline & ติดตั้งแอป](#12-ระบบ-pwa-offline--ติดตั้งแอป)
 
 ---
 
@@ -23,7 +26,7 @@
 - **Frontend Core**: Vanilla JavaScript (ES Modules) + HTML5 + Vanilla CSS (Instant 60fps, Zero Overhead).
 - **TypeScript Intelligence**: ใช้ `tsconfig.json` และ Type Definitions (`src/types/index.d.ts`) ตรวจจับ Type Error ครบถ้วนโดยไม่ต้องคอมไพล์ผ่านเครื่องมือภายนอก
 - **Decoupled Headless Core**: แยกตรรกะ In-Memory Generator, Parser, Validator, UV Math, Icon Renderer, และ SafeZip ออกจาก DOM 100% ทำให้รัน Unit Test และบำรุงรักษาง่าย
-- **Automated Testing Engine**: ขับเคลื่อนด้วย `Vitest` ทดสอบครอบคลุม 28 เคส (Error codes, SafeZip bounds, UV calculation, Addon generator, Validator, Wardrobe system)
+- **Automated Testing Engine**: ขับเคลื่อนด้วย `Vitest` ทดสอบครอบคลุม 43 เคส (Error codes, SafeZip bounds, UV calculation, Addon generator, Validator, Wardrobe system, 3D Cosmetics engine)
 - **Launch & Refresh Loading Screen**: จอโหลดสไตล์ Dragon Crimson (Critical Inline CSS + Smooth Exit Transition) แสดงผลทันทีเมื่อเปิดเว็บหรือกด F5 / รีเฟรชหน้า ป้องกันภาพกระพริบ FOUC
 - **3D Engine**: WebGL Three.js ผ่านไลบรารี `skinview3d (^3.1.0)`.
 - **In-Memory Archive Engine**: `JSZip (^3.10.1)` สำหรับการอ่านและสร้างไฟล์ `.zip`, `.mcpack`, `.mcaddon` บน Client-side 100% ปลอดภัย ไร้ Server
@@ -34,12 +37,15 @@ src/
 ├── core/                       # Headless Core Engine (Pure In-Memory, Zero DOM)
 │   ├── addon/
 │   │   └── addonGenerator.js   # ตัวสร้างแอดออนสกินไอเทมเดี่ยวมาตรฐาน 1.21.10+ (In-Hand scale 1e-5)
+│   ├── cosmetics/
+│   │   └── cosmeticsManager.js # 3D Cosmetics Engine: Preset meshes, Blockbench parser, Three.js viewer attachment, Auto-Color Sampling
 │   ├── wardrobe/
-│   │   ├── wardrobeGenerator.js# ตัวสร้างแอดออนตู้เสื้อผ้าเซิร์ฟเวอร์ + Script API 2.1.0
+│   │   ├── wardrobeGenerator.js# ตัวสร้าง Official Bedrock Skin Pack (.mcpack)
 │   │   └── wardrobeParser.js   # ตัวแยกไฟล์และนำเข้าแอดออนเดิมอย่างปลอดภัย
 │   ├── skin/
 │   │   ├── skinProcessor.js    # คำนวณ UV Map 2 เลเยอร์, Steve/Alex detection, 64x32 to 64x64
-│   │   └── iconGenerator.js    # สร้างไอคอน 16x16 พิกเซลสำหรับกระเป๋าไอเทม
+│   │   ├── iconGenerator.js    # สร้างไอคอน 16x16 พิกเซลสำหรับกระเป๋าไอเทม
+│   │   └── smartAlpha.js       # Smart Alpha Inferrer & Outer Layer Masking (แก้กล่องดำ JPG)
 │   ├── validator/
 │   │   └── addonValidator.js   # ตรวจสอบ Manifest schema, RFC4122 UUID, Textures ก่อนส่งออก
 │   ├── security/
@@ -48,16 +54,24 @@ src/
 │       └── AppError.js         # ระบบรหัสข้อผิดพลาดรวมศูนย์พร้อมข้อความภาษาไทย
 ├── modules/                    # UI Controllers
 │   ├── hidepart.js             # ระบบสกินล่องหน + UV Canvas + 3D Viewer + Presets
-│   ├── standalone.js           # ตัวควบคุมหน้าแอดออนสกินไอเทม + Live Slot Icon Preview
-│   ├── wardrobe.js             # ตัวควบคุมหน้าตู้เสื้อผ้าเซิร์ฟเวอร์
+│   ├── standalone.js           # ตัวควบคุมหน้าแอดออนสกินไอเทม + Live Slot Icon Preview + 3D Cosmetics UI
+│   ├── wardrobe.js             # ตัวควบคุมหน้าตู้เสื้อผ้า + 3D Live Inspect Modal
 │   ├── zip.js                  # ตัวแยกไฟล์ ZIP/MCPACK/MCADDON
 │   ├── sfx.js                  # เอนจินเสียงสังเคราะห์ Web Audio API
 │   ├── mcfire.js               # ระบบสะเก็ดไฟละอองพิกเซล Minecraft
 │   └── utils.js                # ฟังก์ชันช่วย (UUID, Toast, Resolution)
+├── styles/
+│   ├── forms.css               # UI Components: Cosmetic cards, emoji rendering, form controls
+│   └── wardrobe.css            # Wardrobe grid, 3D inspect modal, skin pack export UI
 ├── types/
 │   └── index.d.ts              # Type Definitions สำหรับ TypeScript
 ├── main.js                     # ควบคุม Router สลับแท็บ, Global Drag & Drop, Ctrl+V, Global SFX
 └── style.css                   # ดีไซน์ระบบ Mobile-First Blood Dragon Theme (Dark Fantasy + Luxury Gaming)
+
+public/
+├── manifest.json               # PWA Web App Manifest (name, icons, theme_color, display: standalone)
+├── sw.js                       # Service Worker (Offline Cache: zirconx-studio-v1.5.0)
+└── vercel.json                 # Vercel ignoreCommand สำหรับกิ่ง gh-pages
 ```
 
 ---
@@ -151,13 +165,17 @@ src/
 
 ---
 
-## 5. ระบบตู้เสื้อผ้าเซิร์ฟเวอร์ (Wardrobe Multi-Skin Addon)
+## 5. ระบบตู้เสื้อผ้า / สกินแพ็ก (Wardrobe Skin Pack Manager)
 
-- รองรับการสลับสกินได้หลายชุดในเซิร์ฟเวอร์โดยผู้เล่นไม่ต้องออกจากเกม
-- **Script API Integration**:
-  - ใช้ `@minecraft/server: "2.1.0-beta"` และ `@minecraft/server-ui: "2.0.0-beta"`
-  - คุมสิทธิ์การเปิดตู้ด้วย Xbox Live Gamertags (อนุญาตเฉพาะผู้เล่นที่ระบุไว้)
-  - สลับสกินผ่านระบบ Dynamic Property หรือ Render Controllers
+- สร้าง **Official Bedrock Skin Pack (`.mcpack`)** สำหรับนำเข้าห้องแต่งตัว (Dressing Room / Classic Skins) ของเกมโดยตรง
+- **โครงสร้างไฟล์ Skin Pack**:
+  - `manifest.json`: โมดูล `type: "skin_pack"`, UUID สร้างใหม่ทุกครั้ง
+  - `skins.json`: แมปไฟล์ PNG กับโมเดล Steve (`geometry.humanoid.custom`) หรือ Alex (`geometry.humanoid.customSlim`)
+  - `texts/en_US.lang`, `texts/th_TH.lang`, `texts/languages.json`: ไฟล์แปลภาษาป้องกันรหัสดิบ
+  - ไฟล์ภาพ `.png` ทุกไฟล์ผ่านการแปลง PNG แท้ผ่าน Canvas ก่อนบรรจุ
+- **3D Live Inspect Modal**: คลิกดูโมเดล 3D เต็มตัว 360° ของทุกสกินในตู้เสื้อผ้า สลับ Steve/Alex และทดสอบท่าเดิน/วิ่ง/หยุดนิ่งก่อน Export
+- **นำเข้า/ส่งออก**: รองรับลากวาง `.mcpack` หรือ `.zip` เดิมเข้ามาแก้ไขรายชื่อและเปลี่ยนโมเดลได้ทันที
+- **Smart Alpha Remediation**: สกินที่นำเข้าจะถูกตรวจจับและซ่อมแซมเลเยอร์นอกอัตโนมัติก่อนบรรจุ
 
 ---
 
@@ -214,3 +232,53 @@ src/
   - แตะเลือกไฟล์ผ่าน File Dialog
   - ลากไฟล์มาวางบน Dropzone หรือบนหน้าต่างเบราว์เซอร์ (Global Drag & Drop)
   - กดแปะภาพจาก Clipboard ด้วยคีย์ลัด **Ctrl + V**
+---
+
+## 10. ระบบอุปกรณ์เสริม 3D (3D Cosmetics & Modular Accessories)
+
+โมดูล `src/core/cosmetics/cosmeticsManager.js`:
+- **พรีเซ็ตสำเร็จรูป 5 แบบ** (เลือกผ่านกริดการ์ดบน UI):
+  - `cat_ears`: หูแมว 3D — 4 กล่อง (หูนอก + หูใน ซ้าย/ขวา) ติดบน `skin.head` ที่ตำแหน่ง y=9.2+ (เหนือศีรษะ ไม่บังหน้า)
+  - `dragon_wings`: ปีกมังกร — 4 กล่อง (ปีกหลัก + ปลายปีก ซ้าย/ขวา) ติดบน `skin.body` กางออกด้านหลัง
+  - `fox_tail`: หางจิ้งจอก — 4 ท่อน (โคน → กลาง → ปลาย → ขนฟู) ยื่นจาก `skin.body` ด้านหลัง ปลายสีขาว
+  - `crown`: มงกุฎทอง 3D — ฐาน + 5 ยอดแหลม + เพชรแดง ติดบน `skin.head` y=8.7+ (เหนือศีรษะ ไม่บดบังใบหน้า)
+  - `backpack`: กระเป๋าเป้ — ช่องหลัก + กระเป๋าหน้า + ถุงนอนม้วน ติดบน `skin.body` ด้านหลัง
+- **ระบบสี (Color Tinting)**:
+  - `auto`: สุ่มตรวจสีเฉลี่ยจากพื้นที่ UV หัว/ตัวของสกินจริง (`sampleSkinColor()`)
+  - เลือกสีสำเร็จรูป 6 เฉด: ชมพูพาสเทล, ส้มจิ้งจอก, แดงเข้ม, ฟ้าคราม, ดำด้าน, ขาวหิมะ
+  - เลือกสีอิสระผ่าน `<input type="color">`
+- **Three.js Real-time Attachment**: ชิ้นส่วนทั้งหมดถูกสร้างเป็น `THREE.Group` ที่มี `userData.isCosmetic = true` เพื่อให้ลบ/สลับได้ทันที ใช้ `MeshStandardMaterial` พร้อม roughness/metalness ที่เหมาะสม
+- **Bedrock Geometry Merge**: เมื่อส่งออก `.mcaddon` ระบบจะรวมกล่อง Cosmetic เข้าในกระดูกเป้าหมาย (head/body) ของไฟล์ Geometry JSON มาตรฐาน ได้ Identifier เช่น `geometry.zirconx_cat_ears`
+- **Cross-Platform Emoji**: การ์ดเลือก Cosmetic ใช้ Emoji จาก Unicode ≤ 14.0 เท่านั้น (🐱 🐉 🦊 👑 🎒 📁 ❌) พร้อม Font Stack `Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji`
+
+---
+
+## 11. ระบบนำเข้า Blockbench (.geo.json)
+
+- **Drag & Drop / File Picker**: ลากวางหรือเลือกไฟล์ `.geo.json` ที่ Export จากโปรแกรม Blockbench
+- **Parser (`parseBlockbenchGeoJson`)**:
+  - รองรับทั้งรูปแบบ `minecraft:geometry` (1.12.0+) และ `geometry` (legacy)
+  - ดึง Identifier, จำนวนกระดูก (bones), จำนวนกล่อง (cubes), ขนาดเทกซ์เจอร์
+  - ตรวจสอบความถูกต้องของโครงสร้าง JSON พร้อม Error Message ภาษาไทย
+- **3D Preview ของโมเดล Custom**:
+  - วนกระดูกทั้งหมด → จับคู่กับ `skin[boneName]` ใน skinview3d
+  - คำนวณ Center ของกล่องแต่ละอันจาก `origin + size/2 - pivot` พร้อมแปลงแกน Z (Bedrock → Three.js)
+  - เรนเดอร์เป็น `BoxGeometry` สีตามที่เลือก
+- **Addon Export**: เมื่อเลือก `custom` + มีไฟล์ `.geo.json` ระบบจะใช้ JSON ต้นฉบับเป็น Geometry ของแอดออนโดยตรง ไม่ต้องเขียนโค้ด JSON ด้วยตนเอง
+
+---
+
+## 12. ระบบ PWA Offline & ติดตั้งแอป
+
+- **Web App Manifest** (`public/manifest.json`):
+  - `display: standalone`, `theme_color: #0f1117`, `background_color: #0f1117`
+  - ไอคอน 192x192 และ 512x512 สำหรับ Splash Screen
+- **Service Worker** (`public/sw.js`):
+  - Cache Name: `zirconx-studio-v1.5.0`
+  - กลยุทธ์ Cache-First: แคชไฟล์ทั้งหมดใน `dist/` เมื่อติดตั้ง เปิดใช้งานได้ 100% Offline
+  - Auto-Cleanup: ลบ Cache เวอร์ชันเก่าอัตโนมัติเมื่ออัปเดต
+- **ปุ่มติดตั้งแอป (Responsive Emerald Pill)**:
+  - Chromium/Edge/Samsung: ดักจับ `beforeinstallprompt` แสดงปุ่ม "📲 ติดตั้งแอป" → เรียก `prompt()` เมื่อกด
+  - iOS Safari: แสดง A2HS Guide "ใช้ Share → Add to Home Screen" พร้อมปุ่มสลับแสดง/ซ่อนคำแนะนำ
+  - ซ่อนปุ่มอัตโนมัติเมื่อแอปถูกเปิดใน Standalone Mode (`display-mode: standalone`)
+  - ดีไซน์ Responsive ยืดหยุ่นทุกขนาดจอ ตั้งแต่มือถือ 320px จนถึง Desktop

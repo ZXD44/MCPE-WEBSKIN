@@ -61,6 +61,12 @@
    - รองรับคีย์ลัด **Ctrl + V** เพื่อแปะภาพจาก Clipboard ทันที
    - ตรวจจับไฟล์ `.zip`, `.mcpack`, `.mcaddon` อัตโนมัติ พร้อมอ่านชื่อจาก `manifest.json`
 
+9. **ความเข้ากันได้ของ Emoji ข้ามแพลตฟอร์ม (Cross-Platform Emoji Rendering)**:
+   - **ห้ามใช้ Emoji ที่สูงกว่า Unicode 14.0** (ปี 2021) ในอินเทอร์เฟซ เนื่องจาก Windows 10, Android 12 ลงไป, และ Samsung Browser จะแสดงเป็นช่องว่างหรือกล่องสี่เหลี่ยม
+   - ตัวอย่าง Emoji ต้องห้าม: `🪽` (U+1FABD, Unicode 15.0), `🫨` (U+1FAE8), `🪿` (U+1FABF)
+   - ตัวอย่าง Emoji ปลอดภัย (Unicode ≤ 14.0): `🐉` `🐱` `🦊` `👑` `🎒` `📁` `❌` `✨` `💡` `📦`
+   - ทุก Element ที่แสดง Emoji ต้องกำหนด `font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;` เสมอ เพื่อบังคับให้เบราว์เซอร์ใช้ Font Emoji ที่เหมาะสม
+
 ---
 
 ## 📝 บันทึกประวัติการปรับปรุงระบบ (Update Logs & Changelog)
@@ -69,6 +75,8 @@
 - **3D Cosmetics & Modular Accessories Studio**: เพิ่มระบบเลือกของแต่งตัว 3D สำเร็จรูป (หูแมว 3D, ปีกมังกร, หางจิ้งจอก, มงกุฎลอย, กระเป๋าเป้นักเดินทาง) สวมใส่เข้ากับตัวละครพร้อมระบบเลือกโทนสี หรือปรับสีตามสกินอัตโนมัติ (Auto-Color Sampling)
 - **Blockbench Bridge (.geo.json)**: รองรับการลากวางนำเข้าไฟล์โมเดล Bedrock Geometry ที่ออกแบบจากโปรแกรม Blockbench โดยตรง แปลงเป็นแอดออนสวมใส่ในเกมอัตโนมัติ 100% ไร้โค้ด JSON
 - **Real-time 3D Attachment Engine**: ชิ้นส่วน 3D เคลื่อนไหวตามท่าทางเดิน/วิ่งของตัวละครบนเบราว์เซอร์สดๆ ด้วย Three.js
+- **Cross-Platform Emoji Rendering Fix**: แก้ไข Emoji `🪽` (U+1FABD, Unicode 15.0) ที่แสดงผลเป็นช่องว่างบน Windows 10/11 และ Android เก่า เปลี่ยนเป็น `🐉` (U+1F409, Unicode 6.0) พร้อมเพิ่ม Font Stack `Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji` ให้ `.cosmetic-card-icon` แสดงผลครบ 100% ทุกแพลตฟอร์ม
+- **Responsive PWA Install Button**: ออกแบบปุ่มติดตั้งแอปใหม่สไตล์ Emerald Pill พร้อม iOS Safari A2HS Guide ยืดหยุ่นทุกขนาดจอ
 
 ### v1.4.0 (29 กันยายน 2026)
 - **Wardrobe 3D Live Inspect**: ผู้ใช้สามารถคลิกดูโมเดล 3D แบบเต็มตัวของทุกชุดในตู้เสื้อผ้า หมุนดู 360 องศา สลับโมเดล Steve/Alex และทดสอบท่าเดิน/วิ่งก่อน Export เป็น `.mcpack` ได้ทันที
