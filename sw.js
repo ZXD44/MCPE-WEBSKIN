@@ -2,7 +2,7 @@
  * ZirconX Skin Studio - Service Worker
  * Enables 100% offline usage and home-screen app experience on mobile devices.
  */
-const CACHE_NAME = 'zirconx-studio-v1.3.0';
+const CACHE_NAME = 'zirconx-studio-v1.5.0';
 
 const PRECACHE_URLS = [
   './',
