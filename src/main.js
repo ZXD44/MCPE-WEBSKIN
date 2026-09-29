@@ -107,6 +107,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Guide Sub-tabs Switcher
+  const guideTabBtns = document.querySelectorAll('.guide-tab-btn');
+  const guidePanels = document.querySelectorAll('.guide-panel');
+
+  guideTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetPanelId = `guide-panel-${btn.dataset.guidetab}`;
+      guideTabBtns.forEach(b => b.classList.toggle('active', b === btn));
+      guidePanels.forEach(panel => {
+        panel.classList.toggle('active', panel.id === targetPanelId);
+      });
+    });
+  });
+
   // 4. Sound Effects (SFX) Toggle
   const sfxToggleBtn = document.getElementById('sfx-toggle-btn');
   const iconOn = document.getElementById('sfx-icon-on');

@@ -360,6 +360,173 @@
 }
 
 /* ==========================================================================
+   ENHANCED GUIDE & CHANGELOG VIEW
+   ========================================================================== */
+.guide-nav-bar {
+  display: flex;
+  gap: 0.4rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--mc-border-mid);
+  padding: 0.35rem;
+  border-radius: var(--r-sm);
+  margin-bottom: 1.15rem;
+}
+
+.guide-tab-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.6rem 0.5rem;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-pixel), var(--font-mono), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.guide-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.guide-tab-btn.active {
+  background: var(--bg-panel-elevated);
+  border-color: var(--mc-border-light);
+  color: #ffffff;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.guide-tab-btn.active svg {
+  color: #38bdf8;
+}
+
+.guide-panel {
+  display: none;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.guide-panel.active {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* Step Cards */
+.guide-step-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--mc-border-mid);
+  border-radius: var(--r-sm);
+  padding: 1rem 1.15rem;
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  transition: border-color 0.2s ease;
+}
+
+.guide-step-card:hover {
+  border-color: var(--mc-border-light);
+}
+
+.guide-step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: var(--r-xs);
+  background: var(--mc-green);
+  color: #0c1a10;
+  font-family: var(--font-pixel), var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 900;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.guide-step-content {
+  flex: 1;
+}
+
+.guide-step-title {
+  font-family: var(--font-pixel), var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.guide-step-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* Tips Comparison Grid */
+.tips-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .tips-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tips-box {
+  border-radius: var(--r-sm);
+  padding: 1rem;
+  border: 1px solid;
+}
+
+.tips-box-good {
+  background: rgba(34, 197, 94, 0.05);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.tips-box-bad {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.tips-box-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-pixel), var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.tips-box-good .tips-box-title {
+  color: #4ade80;
+}
+
+.tips-box-bad .tips-box-title {
+  color: #f87171;
+}
+
+.tips-box-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.tips-box-list li {
+  margin-bottom: 0.35rem;
+}
+
+/* ==========================================================================
    CHANGELOG & UPDATE LOGS
    ========================================================================== */
 .changelog-card {
@@ -367,7 +534,6 @@
   border: 1px solid var(--mc-border-mid);
   border-radius: var(--r-sm);
   padding: 1.15rem;
-  margin-top: 0.5rem;
 }
 
 .changelog-header {
@@ -424,4 +590,5 @@
 .changelog-list li strong {
   color: #ffffff;
 }
+
 
