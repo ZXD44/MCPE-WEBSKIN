@@ -300,6 +300,9 @@ export class HidePartEditor {
 
       this.render();
       sfx.playPop();
+      if (processedImg._wasResized) {
+        showToast(`ปรับขนาดสกินจาก ${processedImg._origW}x${processedImg._origH} เป็น ${this.resolution}x${this.resolution} อัตโนมัติ`, 'info');
+      }
       showToast(displayName ? `โหลดสกิน ${displayName} เรียบร้อย` : 'อัปโหลดสกินเรียบร้อย', 'success');
     } catch (err) {
       showToast(err.message || 'ประมวลผลสกินล้มเหลว', 'error');

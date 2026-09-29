@@ -356,6 +356,9 @@ export class StandaloneAddonGenerator {
 
       this.renderSkin();
       sfx.playPop();
+      if (processedImg._wasResized) {
+        showToast(`ปรับขนาดสกินจาก ${processedImg._origW}x${processedImg._origH} เป็น ${this.skinResolution}x${this.skinResolution} อัตโนมัติ`, 'info');
+      }
       showToast(fileName ? `โหลดสกิน ${fileName} เรียบร้อย` : 'อัปโหลดสกินเรียบร้อย', 'success');
     } catch (err) {
       showToast(err.message || 'ประมวลผลสกินล้มเหลว', 'error');

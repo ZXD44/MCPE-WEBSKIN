@@ -146,12 +146,13 @@ export class WardrobeMultiEditor {
     }
 
     let loaded = 0;
+    const errors = [];
     for (const file of imageFiles) {
       try {
         const reader = new FileReader();
         const readPromise = new Promise((resolve, reject) => {
           reader.onload = (e) => resolve(e.target.result);
-          reader.onerror = reject;
+          reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์ได้'));
           reader.readAsDataURL(file);
         });
 
@@ -159,7 +160,7 @@ export class WardrobeMultiEditor {
         const img = new Image();
         await new Promise((resolve, reject) => {
           img.onload = resolve;
-          img.onerror = reject;
+          img.onerror = () => reject(new Error('ไฟล์ภาพไม่ถูกต้องหรือชำรุด'));
           img.src = dataUrl;
         });
 
@@ -191,8 +192,13 @@ export class WardrobeMultiEditor {
         });
 
         loaded++;
+
+        if (processedImg._wasResized) {
+          showToast(`ปรับขนาด ${file.name} (${processedImg._origW}x${processedImg._origH} → ${processedImg.width}x${processedImg.height}) อัตโนมัติ`, 'info');
+        }
       } catch (err) {
         console.warn(`Failed to process skin file ${file.name}:`, err);
+        errors.push(`${file.name}: ${err.message || 'ประมวลผลล้มเหลว'}`);
       }
     }
 
@@ -200,6 +206,10 @@ export class WardrobeMultiEditor {
       sfx.playPop();
       showToast(`เพิ่มสกินสำเร็จ ${loaded} ชุด!`, 'success');
       this.renderSkinList();
+    }
+
+    if (errors.length > 0) {
+      showToast(`พบข้อผิดพลาด: ${errors[0]}`, 'error');
     }
   }
 

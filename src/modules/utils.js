@@ -56,18 +56,49 @@ export function showToast(message, type = "info") {
 export function processSkinResolution(img) {
   return new Promise((resolve, reject) => {
     try {
-      const { isLegacy } = validateSkinDimensions(img.width, img.height);
+      const dim = validateSkinDimensions(img.width, img.height);
 
-      if (isLegacy) {
+      if (dim.isLegacy) {
         const upgradedCanvas = convert64x32To64x64(img);
         const upgraded = new Image();
-        upgraded.onload = () => resolve(upgraded);
+        upgraded.onload = () => {
+          upgraded._wasResized = true;
+          upgraded._origW = img.width;
+          upgraded._origH = img.height;
+          resolve(upgraded);
+        };
         upgraded.onerror = () => reject(new Error("ไม่สามารถประมวลผลไฟล์สกินได้"));
         upgraded.src = upgradedCanvas.toDataURL("image/png");
         return;
       }
 
-      // Preserve full HD resolution directly
+      if (dim.needsResize) {
+        const resizeCanvas = document.createElement("canvas");
+        resizeCanvas.width = dim.targetResolution;
+        resizeCanvas.height = dim.targetResolution;
+        const rCtx = resizeCanvas.getContext("2d");
+        if (!rCtx) {
+          throw new Error("Canvas context unavailable");
+        }
+        rCtx.imageSmoothingEnabled = false;
+        rCtx.drawImage(img, 0, 0, dim.targetResolution, dim.targetResolution);
+
+        const resized = new Image();
+        resized.onload = () => {
+          resized._wasResized = true;
+          resized._origW = img.width;
+          resized._origH = img.height;
+          resolve(resized);
+        };
+        resized.onerror = () => reject(new Error("ไม่สามารถปรับขนาดภาพสกินได้"));
+        resized.src = resizeCanvas.toDataURL("image/png");
+        return;
+      }
+
+      // Preserve native resolution directly
+      img._wasResized = false;
+      img._origW = img.width;
+      img._origH = img.height;
       resolve(img);
     } catch (err) {
       reject(err instanceof AppError ? new Error(err.userMessage) : err);

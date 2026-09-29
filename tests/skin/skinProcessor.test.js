@@ -30,11 +30,22 @@ describe('Skin Processor Core', () => {
 
     it('rejects non-square skins other than 64x32', () => {
       expect(() => validateSkinDimensions(128, 64)).toThrowError();
+      expect(() => validateSkinDimensions(100, 200)).toThrowError();
     });
 
-    it('rejects invalid or arbitrary dimensions', () => {
-      expect(() => validateSkinDimensions(100, 100)).toThrowError();
+    it('auto-normalizes arbitrary square dimensions like 1452x1452 and 1254x1254', () => {
+      const s1 = validateSkinDimensions(1452, 1452);
+      expect(s1.needsResize).toBe(true);
+      expect(s1.targetResolution).toBe(64);
+
+      const s2 = validateSkinDimensions(1254, 1254);
+      expect(s2.needsResize).toBe(true);
+      expect(s2.targetResolution).toBe(64);
+    });
+
+    it('rejects out of bounds dimensions (>4096 or <32)', () => {
       expect(() => validateSkinDimensions(5000, 5000)).toThrowError();
+      expect(() => validateSkinDimensions(16, 16)).toThrowError();
     });
   });
 

@@ -17,24 +17,38 @@ export function validateSkinDimensions(width, height) {
     throw new AppError(ErrorCode.SKIN_INVALID_DIMENSIONS, { width, height });
   }
 
+  // Reject out of bounds (security & memory limit)
+  if (width > 4096 || height > 4096 || width < 32 || height < 32) {
+    throw new AppError(ErrorCode.SKIN_INVALID_DIMENSIONS, { width, height });
+  }
+
   // Legacy 64x32
   if (width === 64 && height === 32) {
-    return { isLegacy: true, resolution: 64 };
+    return { isLegacy: true, needsResize: false, resolution: 64, targetResolution: 64 };
   }
 
   if (width !== height) {
     throw new AppError(ErrorCode.SKIN_NON_SQUARE, { width, height });
   }
 
-  const isValid =
+  const isExactStandard =
     VALID_EXPLICIT_RESOLUTIONS.includes(width) ||
     (width % 64 === 0 && width <= 4096);
 
-  if (!isValid) {
-    throw new AppError(ErrorCode.SKIN_INVALID_DIMENSIONS, { width, height });
+  if (isExactStandard) {
+    return { isLegacy: false, needsResize: false, resolution: width, targetResolution: width };
   }
 
-  return { isLegacy: false, resolution: width };
+  // Arbitrary square dimensions (e.g. 1452x1452, 1254x1254, 800x800, etc.)
+  // Automatically normalize to standard 64x64
+  return {
+    isLegacy: false,
+    needsResize: true,
+    resolution: 64,
+    targetResolution: 64,
+    originalWidth: width,
+    originalHeight: height
+  };
 }
 
 /**
