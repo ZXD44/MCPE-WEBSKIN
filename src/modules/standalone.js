@@ -2,8 +2,7 @@
  * Standalone Skin Item Addon Generator (แอดออนสกินแบบไอเทม)
  */
 import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
-import { generateUUID, generateRandomId, processSkinResolution, detectSlimModel, showToast } from './utils.js';
+import { generateUUID, generateRandomId, processSkinResolution, detectSlimModel, showToast, downloadMcaddonFile } from './utils.js';
 import { isZipArchive, extractSkinFromArchive } from './zip.js';
 import { sfx } from './sfx.js';
 import { createStandaloneSkinAddon } from '../core/addon/addonGenerator.js';
@@ -23,6 +22,7 @@ export class StandaloneAddonGenerator {
     this.skinImg = new Image();
     this.skinResolution = 64;
     this.processedSkinBlob = null;
+    this.currentSkinBlobUrl = null;
 
     this.modelType = 1; // 1: Steve, 2: Alex, 3: Custom Geometry
     this.customGeometryJson = null;
@@ -397,18 +397,16 @@ export class StandaloneAddonGenerator {
     this.ctx.imageSmoothingEnabled = false;
     this.ctx.drawImage(this.skinImg, 0, 0, this.skinResolution, this.skinResolution);
 
-    const rects = this.getPartRectangles();
-
-    if (!this.parts.head) rects.head.forEach(r => this.ctx.clearRect(r.x, r.y, r.w, r.h));
-    if (!this.parts.body) rects.body.forEach(r => this.ctx.clearRect(r.x, r.y, r.w, r.h));
-    if (!this.parts.arms) rects.arms.forEach(r => this.ctx.clearRect(r.x, r.y, r.w, r.h));
-    if (!this.parts.legs) rects.legs.forEach(r => this.ctx.clearRect(r.x, r.y, r.w, r.h));
+    applyPartClippingToContext(this.ctx, this.skinResolution, this.parts);
 
     this.canvas.toBlob(blob => {
       this.processedSkinBlob = blob;
-      if (this.viewer && blob) {
-        const url = URL.createObjectURL(blob);
-        this.viewer.loadSkin(url);
+      if (!blob) return;
+      if (this.currentSkinBlobUrl) URL.revokeObjectURL(this.currentSkinBlobUrl);
+      this.currentSkinBlobUrl = URL.createObjectURL(blob);
+
+      if (this.viewer) {
+        this.viewer.loadSkin(this.currentSkinBlobUrl);
       }
     }, 'image/png');
   }
@@ -578,9 +576,8 @@ export class StandaloneAddonGenerator {
         return;
       }
 
-      // 3. Serializer & Download
-      const mcaddonBlob = await generated.zip.generateAsync({ type: 'blob' });
-      saveAs(mcaddonBlob, `${this.addonName}_v${this.addonVersion.join('_')}.mcaddon`);
+      // 3. Serializer & Download (clean .mcaddon extension without .zip)
+      await downloadMcaddonFile(generated.zip, `${this.addonName}_v${this.addonVersion.join('_')}`);
 
       sfx.playLevelUp();
       showToast('✓ ตรวจสอบความถูกต้องผ่าน ดาวน์โหลดสำเร็จ!', 'success');

@@ -107,56 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 3.1 Dragon Year NEWEST Circular Buttons & Slider Track Controller
-  const circlePrevBtn = document.getElementById('circle-nav-prev');
-  const circleNextBtn = document.getElementById('circle-nav-next');
-  const slideCards = document.querySelectorAll('.newest-slide-card');
-  const indicatorDots = document.querySelectorAll('.indicator-dot');
-  let currentSlide = 0;
-  const totalSlides = slideCards.length;
-
-  function setActiveSlide(index) {
-    if (totalSlides === 0) return;
-    currentSlide = (index + totalSlides) % totalSlides;
-
-    slideCards.forEach((card, idx) => {
-      const isActive = idx === currentSlide;
-      card.classList.toggle('active', isActive);
-      if (isActive) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      }
-    });
-
-    indicatorDots.forEach((dot, idx) => {
-      dot.classList.toggle('active', idx === currentSlide);
-    });
-  }
-
-  if (circlePrevBtn) {
-    circlePrevBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      sfx.playClick();
-      setActiveSlide(currentSlide - 1);
-    });
-  }
-
-  if (circleNextBtn) {
-    circleNextBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      sfx.playClick();
-      setActiveSlide(currentSlide + 1);
-    });
-  }
-
-  indicatorDots.forEach(dot => {
-    dot.addEventListener('click', () => {
-      const idx = parseInt(dot.dataset.idx, 10);
-      sfx.playClick();
-      setActiveSlide(idx);
-    });
-  });
-
-
   // 4. Sound Effects (SFX) Toggle
   const sfxToggleBtn = document.getElementById('sfx-toggle-btn');
   const iconOn = document.getElementById('sfx-icon-on');
@@ -235,6 +185,8 @@ document.addEventListener('DOMContentLoaded', () => {
       hidePartModule.loadFile(file);
     } else if (currentTab === 'standalone') {
       standaloneModule.loadFile(file);
+    } else if (currentTab === 'wardrobe') {
+      wardrobeModule.handleFiles(Array.from(files));
     } else {
       switchTab('hidepart');
       setTimeout(() => hidePartModule.loadFile(file), 150);
@@ -254,6 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast('วางสกินจาก Clipboard (Ctrl+V)', 'info');
           if (currentTab === 'standalone') {
             standaloneModule.loadFile(blob);
+          } else if (currentTab === 'wardrobe') {
+            wardrobeModule.handleFiles([blob]);
           } else {
             if (currentTab !== 'hidepart') switchTab('hidepart');
             setTimeout(() => hidePartModule.loadFile(blob), 150);

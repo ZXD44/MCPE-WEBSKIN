@@ -328,7 +328,7 @@
               </button>
             </div>
 
-            <!-- Card 3: ตู้เสื้อผ้า -->
+            <!-- Card 3: สกินแพ็ก -->
             <div class="mc-tool-card theme-blue" data-goto="wardrobe">
               <div class="mc-tool-card-top">
                 <div class="mc-slot-icon blue">
@@ -341,8 +341,8 @@
                 </div>
                 <div class="mc-tool-card-info">
                   <span class="mc-tool-num">TOOL 03</span>
-                  <h3 class="mc-tool-name">ตู้เสื้อผ้าเซิร์ฟเวอร์</h3>
-                  <p class="mc-tool-desc">รวมหลายชุดในแอดออนเดียว กำหนด Gamertag ผู้มีสิทธิ์ได้</p>
+                  <h3 class="mc-tool-name">สกินแพ็ก (.mcpack)</h3>
+                  <p class="mc-tool-desc">รวมหลายสกินเป็นแพ็กเกจเดียว นำเข้าห้องแต่งตัว Minecraft ได้ทันที</p>
                 </div>
               </div>
               <button class="mc-tool-btn" data-goto="wardrobe">
@@ -668,86 +668,82 @@
       </section>
 
       <!-- ===================================================================
-           4. WARDROBE VIEW (ตู้เสื้อผ้าเซิร์ฟเวอร์)
+           4. WARDROBE VIEW (สกินแพ็ก .MCPACK)
            =================================================================== -->
       <section id="section-wardrobe" class="page-section">
-        <!-- List Panel -->
-        <div id="wardrobe-list-panel">
-          <div class="view-top-bar">
-            <div class="view-heading">ตู้เสื้อผ้าเซิร์ฟเวอร์</div>
-            <button class="view-back-home-btn" data-goto="home" title="กลับหน้าหลัก">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-              <span>กลับหน้าหลัก</span>
-            </button>
-          </div>
-
-          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.85rem;">
-            <button id="wardrobe-add-btn" class="mc-btn mc-btn-primary" style="flex: 2;">
-              + เพิ่มตู้
-            </button>
-            <button onclick="document.getElementById('wardrobe-import-input').click()" class="mc-btn mc-btn-dark"
-              style="flex: 1;">
-              นำเข้า
-            </button>
-            <input type="file" id="wardrobe-import-input" accept=".json" style="display: none;">
-          </div>
-
-          <div style="display: none;">
-            <input type="text" id="wardrobe-search-input">
-            <button id="wardrobe-clear-search"></button>
-          </div>
-
-          <div id="wardrobe-grid-container" style="margin-bottom: 1rem;"></div>
-
-          <button id="wardrobe-export-btn" class="mc-btn mc-btn-primary">
-            ส่งออกแอดออน (.mcaddon)
+        <div class="view-top-bar">
+          <div class="view-heading">สกินแพ็ก (.mcpack)</div>
+          <button class="view-back-home-btn" data-goto="home" title="กลับหน้าหลัก">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span>กลับหน้าหลัก</span>
           </button>
-
-          <!-- Hidden meta inputs for compat -->
-          <div style="display: none;">
-            <button id="wardrobe-toggle-meta-btn"></button>
-            <div id="wardrobe-meta-box">
-              <input type="number" id="wardrobe-v-major" value="1">
-              <input type="number" id="wardrobe-v-minor" value="0">
-              <input type="number" id="wardrobe-v-patch" value="0">
-              <div id="wardrobe-author-list"></div>
-              <button id="wardrobe-add-author-btn"></button>
-            </div>
-          </div>
         </div>
 
-        <!-- Detail Panel -->
-        <div id="wardrobe-detail-panel" style="display: none;">
-          <div class="view-top-bar">
-            <button id="wardrobe-detail-back-btn" class="mc-btn mc-btn-dark"
-              style="width: auto; padding: 0.4rem 0.9rem; font-size: 0.8rem;">&larr; กลับ</button>
-            <div class="view-heading">แก้ไขตู้เสื้อผ้า</div>
-          </div>
-
-          <div class="form-box">
-            <label class="form-label">ชื่อตู้เสื้อผ้า</label>
-            <input type="text" id="wardrobe-detail-name" class="mc-input">
-          </div>
-
-          <div class="form-box">
-            <label class="form-label">Gamertag ผู้มีสิทธิ์</label>
-            <div id="wardrobe-gamertag-chips" class="chips-container"></div>
-          </div>
-
-          <div style="margin-top: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-              <span class="form-label" style="margin: 0;">ชุดในตู้นี้</span>
-              <button onclick="document.getElementById('wardrobe-add-outfit-input').click()"
-                class="mc-btn mc-btn-primary" style="width: auto; padding: 0.35rem 0.75rem; font-size: 0.75rem;">
-                + เพิ่มชุด (PNG)
-              </button>
-              <input type="file" id="wardrobe-add-outfit-input" accept="image/png" multiple style="display: none;">
-            </div>
-            <div id="wardrobe-outfit-list" class="outfit-grid"></div>
-          </div>
+        <!-- Pack Name Input -->
+        <div class="form-box">
+          <label class="form-label">ชื่อสกินแพ็ก (Skin Pack Name)</label>
+          <input type="text" id="wardrobe-pack-name" class="mc-input" value="ชุดสกินของฉัน" placeholder="เช่น ชุดโปรดของฉัน">
         </div>
+
+        <!-- Dropzone / Bulk Upload -->
+        <div class="dropzone-box" id="wardrobe-dropzone" style="margin-bottom: 0.85rem;">
+          <div class="dropzone-icon">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" style="color: #38bdf8;">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <line x1="12" y1="3" x2="12" y2="21" />
+              <circle cx="8" cy="12" r="1" />
+              <circle cx="16" cy="12" r="1" />
+            </svg>
+          </div>
+          <div class="dropzone-text">เลือกหรือลากไฟล์ภาพสกิน (.png) หลายๆ ไฟล์</div>
+          <div class="dropzone-sub">อัปโหลดพร้อมกันได้ไม่จำกัด • หรือลากไฟล์ .mcpack เพื่อแก้ไข</div>
+        </div>
+        <input type="file" id="wardrobe-add-outfit-input" accept="image/png,.png" multiple style="display: none;">
+        <input type="file" id="wardrobe-import-input" accept=".mcpack,.zip,.mcaddon" style="display: none;">
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.15rem;">
+          <button onclick="document.getElementById('wardrobe-add-outfit-input').click()" class="mc-btn mc-btn-primary" style="flex: 2;">
+            + เพิ่มสกิน (PNG)
+          </button>
+          <button onclick="document.getElementById('wardrobe-import-input').click()" class="mc-btn mc-btn-dark" style="flex: 1.2;">
+            นำเข้า .mcpack
+          </button>
+          <button id="wardrobe-clear-btn" class="mc-btn mc-btn-danger" style="flex: 0.8;" title="ล้างรายการสกินทั้งหมด">
+            ล้าง
+          </button>
+        </div>
+
+        <!-- Skins List Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem;">
+          <span style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 800; color: #ffffff;">รายการสกินในแพ็ก</span>
+          <span id="wardrobe-skin-count" class="res-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.35);">0 ชุด</span>
+        </div>
+
+        <!-- Empty State -->
+        <div id="wardrobe-empty-state" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); background: var(--bg-surface); border: 1px dashed var(--mc-border-mid); border-radius: var(--r-sm); margin-bottom: 1.25rem;">
+          ยังไม่มีสกินในแพ็ก กดปุ่ม <b>"+ เพิ่มสกิน (PNG)"</b> หรือลากไฟล์ภาพมาวางเพื่อเริ่มต้น
+        </div>
+
+        <!-- Outfit Cards Grid -->
+        <div id="wardrobe-outfit-list" class="skinpack-grid" style="margin-bottom: 1.25rem;"></div>
+
+        <!-- Export .mcpack Button -->
+        <button id="wardrobe-export-btn" class="mc-btn mc-btn-primary" style="width: 100%;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.4rem;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>ส่งออกสกินแพ็ก (.mcpack)</span>
+        </button>
+
+        <p style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-muted); text-align: center; margin-top: 0.65rem; line-height: 1.4;">
+          ✨ เมื่อนำเข้า .mcpack สกินทั้งหมดจะเข้าไปอยู่ใน <strong>Dressing Room (ห้องแต่งตัว)</strong> ของเกมทันที
+        </p>
       </section>
 
       <!-- ===================================================================

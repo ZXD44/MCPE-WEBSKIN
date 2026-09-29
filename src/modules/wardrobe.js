@@ -1,408 +1,360 @@
 /**
- * Wardrobe Multi-Skin Addon System (แอดออนสกินสำหรับเซิร์ฟเวอร์ใหญ่)
+ * Minecraft Bedrock Skin Pack Generator (.mcpack)
+ * Pure Client-Side Generator for Minecraft Bedrock Dressing Room / Classic Skins
  */
-import { saveAs } from 'file-saver';
-import { generateRandomId, showToast } from './utils.js';
-import { createWardrobeAddon } from '../core/wardrobe/wardrobeGenerator.js';
-import { parseWardrobeArchive } from '../core/wardrobe/wardrobeParser.js';
+import { generateRandomId, showToast, downloadMcpackFile, processSkinResolution, detectSlimModel } from './utils.js';
+import { createSkinPack } from '../core/wardrobe/wardrobeGenerator.js';
+import { parseSkinPackArchive } from '../core/wardrobe/wardrobeParser.js';
 import { validateAddonPackage } from '../core/validator/addonValidator.js';
+import { sfx } from './sfx.js';
+
+/**
+ * Extract 16x16 pixel face avatar from skin image for UI preview
+ */
+function extractFaceDataUrl(img) {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 16;
+    canvas.height = 16;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return '';
+    ctx.imageSmoothingEnabled = false;
+    const t = (img.width || 64) / 64;
+    // Base Face (8, 8, 8, 8) -> (1, 1, 14, 14)
+    ctx.drawImage(img, Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 1, 1, 14, 14);
+    // Outer Hat (40, 8, 8, 8) -> (1, 1, 14, 14)
+    ctx.drawImage(img, Math.round(40 * t), Math.round(8 * t), Math.round(8 * t), Math.round(8 * t), 1, 1, 14, 14);
+    return canvas.toDataURL('image/png');
+  } catch (_) {
+    return '';
+  }
+}
 
 export class WardrobeMultiEditor {
   constructor() {
-    this.wardrobes = [];
-    this.activeWardrobeUniq = null;
-    this.addonVersion = [1, 0, 0];
-    this.authors = ['ServerTeam', 'SkinProject'];
-    this.searchQuery = '';
+    this.packName = 'ชุดสกินของฉัน';
+    this.version = [1, 0, 0];
+    this.skins = [];
 
     this.init();
   }
 
   init() {
-    // Search input
-    const searchInput = document.getElementById('wardrobe-search-input');
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        this.searchQuery = e.target.value.toLowerCase().trim();
-        this.renderWardrobeList();
+    // 1. Pack Name input
+    const nameInput = document.getElementById('wardrobe-pack-name') || document.getElementById('wardrobe-detail-name');
+    if (nameInput) {
+      nameInput.value = this.packName;
+      nameInput.addEventListener('input', (e) => {
+        this.packName = e.target.value.trim() || 'ZirconX Skin Pack';
       });
     }
 
-    const clearSearch = document.getElementById('wardrobe-clear-search');
-    if (clearSearch) {
-      clearSearch.addEventListener('click', () => {
-        if (searchInput) searchInput.value = '';
-        this.searchQuery = '';
-        this.renderWardrobeList();
-      });
-    }
-
-    // Add Wardrobe button
-    const addWardrobeBtn = document.getElementById('wardrobe-add-btn');
-    if (addWardrobeBtn) {
-      addWardrobeBtn.addEventListener('click', () => this.addWardrobe());
-    }
-
-    // Import .mcaddon
-    const importInput = document.getElementById('wardrobe-import-input');
-    if (importInput) {
-      importInput.addEventListener('change', (e) => this.handleImportMcaddon(e));
-    }
-
-    // Export .mcaddon
-    const exportBtn = document.getElementById('wardrobe-export-btn');
-    if (exportBtn) {
-      exportBtn.addEventListener('click', () => this.exportMcaddon());
-    }
-
-    // Close Wardrobe Detail / Back
-    const backBtn = document.getElementById('wardrobe-detail-back-btn');
-    if (backBtn) {
-      backBtn.addEventListener('click', () => {
-        this.activeWardrobeUniq = null;
-        document.getElementById('wardrobe-detail-panel').style.display = 'none';
-        document.getElementById('wardrobe-list-panel').style.display = 'block';
-        this.renderWardrobeList();
-      });
-    }
-
-    // Add Xbox Gamertag button
-    const addGamertagBtn = document.getElementById('wardrobe-add-gamertag-btn');
-    if (addGamertagBtn) {
-      addGamertagBtn.addEventListener('click', () => this.addGamertag());
-    }
-
-    // Add Skin / Outfit input in Wardrobe Detail
+    // 2. Add Skins Input (Multiple PNGs)
     const addOutfitInput = document.getElementById('wardrobe-add-outfit-input');
     if (addOutfitInput) {
-      addOutfitInput.addEventListener('change', (e) => this.handleAddOutfit(e));
-    }
-
-    // Addon Metadata Toggles
-    const toggleMetaBtn = document.getElementById('wardrobe-toggle-meta-btn');
-    const metaBox = document.getElementById('wardrobe-meta-box');
-    if (toggleMetaBtn && metaBox) {
-      toggleMetaBtn.addEventListener('click', () => {
-        const isHidden = metaBox.style.display === 'none';
-        metaBox.style.display = isHidden ? 'block' : 'none';
-        toggleMetaBtn.textContent = isHidden ? 'ซ่อนการตั้งค่า' : 'ตั้งค่าเวอร์ชั่น & เครดิต';
-      });
-    }
-
-    // Version inputs
-    ['major', 'minor', 'patch'].forEach((v, index) => {
-      const input = document.getElementById(`wardrobe-v-${v}`);
-      if (input) {
-        input.addEventListener('input', (e) => {
-          let val = parseInt(e.target.value);
-          if (isNaN(val) || val < 0) val = 0;
-          this.addonVersion[index] = val;
-        });
-      }
-    });
-
-    // Add author button
-    const addAuthorBtn = document.getElementById('wardrobe-add-author-btn');
-    if (addAuthorBtn) {
-      addAuthorBtn.addEventListener('click', () => {
-        this.authors.push(`Author_${this.authors.length + 1}`);
-        this.renderAuthors();
-      });
-    }
-
-    this.renderWardrobeList();
-    this.renderAuthors();
-  }
-
-  addWardrobe() {
-    const num = this.wardrobes.length + 1;
-    const newWardrobe = {
-      uniq: (Date.now() + Math.random() * 1000).toString(32),
-      name: `ตู้เสื้อผ้าที่ ${num}`,
-      allowUsername: [],
-      skinlist: []
-    };
-    this.wardrobes.push(newWardrobe);
-    this.renderWardrobeList();
-    showToast(`เพิ่ม ${newWardrobe.name} เรียบร้อย`, 'success');
-  }
-
-  deleteWardrobe(uniq) {
-    this.wardrobes = this.wardrobes.filter(w => w.uniq !== uniq);
-    this.renderWardrobeList();
-    showToast('ลบตู้เสื้อผ้าเรียบร้อย', 'info');
-  }
-
-  openWardrobeDetail(uniq) {
-    this.activeWardrobeUniq = uniq;
-    const w = this.wardrobes.find(item => item.uniq === uniq);
-    if (!w) return;
-
-    document.getElementById('wardrobe-list-panel').style.display = 'none';
-    document.getElementById('wardrobe-detail-panel').style.display = 'block';
-
-    const nameInput = document.getElementById('wardrobe-detail-name');
-    if (nameInput) {
-      nameInput.value = w.name;
-      nameInput.oninput = (e) => {
-        w.name = e.target.value;
-      };
-    }
-
-    this.renderGamertags();
-    this.renderOutfits();
-  }
-
-  addGamertag(tagName) {
-    const w = this.wardrobes.find(item => item.uniq === this.activeWardrobeUniq);
-    if (!w) return;
-    const name = tagName ? tagName.trim() : 'PlayerName';
-    if (name && !w.allowUsername.includes(name)) {
-      w.allowUsername.push(name);
-      this.renderGamertags();
-    }
-  }
-
-  renderGamertags() {
-    const w = this.wardrobes.find(item => item.uniq === this.activeWardrobeUniq);
-    const container = document.getElementById('wardrobe-gamertag-chips');
-    if (!w || !container) return;
-
-    container.innerHTML = '';
-    w.allowUsername.forEach((tag, index) => {
-      const chip = document.createElement('span');
-      chip.className = 'chip';
-      chip.innerHTML = `
-        <span>${tag}</span>
-        <span class="chip-close" data-remove="${index}">&times;</span>
-      `;
-      chip.querySelector('[data-remove]').onclick = () => {
-        w.allowUsername.splice(index, 1);
-        this.renderGamertags();
-      };
-      container.appendChild(chip);
-    });
-
-    // Input inside chip container
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'chip-input';
-    input.placeholder = '+ พิมพ์ชื่อ Gamertag แล้วกด Enter...';
-    input.onkeydown = (e) => {
-      if (e.key === 'Enter' || e.key === ',') {
-        e.preventDefault();
-        const val = input.value.replace(',', '').trim();
-        if (val) {
-          this.addGamertag(val);
-          input.value = '';
+      addOutfitInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0) {
+          this.handleFiles(files);
         }
-      }
-    };
-    container.appendChild(input);
+        e.target.value = '';
+      });
+    }
+
+    // 3. Dropzone
+    const dropzone = document.getElementById('wardrobe-dropzone');
+    if (dropzone) {
+      dropzone.addEventListener('click', () => {
+        if (addOutfitInput) addOutfitInput.click();
+      });
+
+      ['dragenter', 'dragover'].forEach(name => {
+        dropzone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.add('drag-over');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(name => {
+        dropzone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.remove('drag-over');
+        });
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        const files = Array.from(e.dataTransfer?.files || []);
+        if (files.length > 0) {
+          this.handleFiles(files);
+        }
+      });
+    }
+
+    // 4. Import .mcpack / .zip Input
+    const importInput = document.getElementById('wardrobe-import-input');
+    if (importInput) {
+      importInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          this.handleImportMcpack(file);
+        }
+        e.target.value = '';
+      });
+    }
+
+    // 5. Clear All Button
+    const clearBtn = document.getElementById('wardrobe-clear-btn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        if (this.skins.length === 0) return;
+        this.skins = [];
+        this.renderSkinList();
+        showToast('ล้างรายการสกินเรียบร้อย', 'info');
+      });
+    }
+
+    // 6. Export Button
+    const exportBtn = document.getElementById('wardrobe-export-btn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => this.exportMcpack());
+    }
+
+    this.renderSkinList();
   }
 
-  handleAddOutfit(e) {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
+  async handleFiles(files) {
+    // Check if user dropped a .mcpack or .zip file
+    const archiveFile = files.find(f => {
+      const n = f.name.toLowerCase();
+      return n.endsWith('.mcpack') || n.endsWith('.zip') || n.endsWith('.mcaddon');
+    });
 
-    const w = this.wardrobes.find(item => item.uniq === this.activeWardrobeUniq);
-    if (!w) return;
+    if (archiveFile && files.length === 1) {
+      await this.handleImportMcpack(archiveFile);
+      return;
+    }
 
-    let loadedCount = 0;
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const skinURL = event.target.result;
-        const action = generateRandomId(20);
-        const outfitName = file.name.replace(/\.[^/.]+$/, '').replace(/[_\-]/g, ' ');
-        w.skinlist.push({
-          name: outfitName || `ชุดที่ ${w.skinlist.length + 1}`,
-          action: action,
-          skinURL: skinURL,
+    const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png') || f.type.includes('image'));
+    if (pngFiles.length === 0) {
+      showToast('กรุณาเลือกไฟล์ภาพสกิน (.png)', 'error');
+      return;
+    }
+
+    let loaded = 0;
+    for (const file of pngFiles) {
+      try {
+        const reader = new FileReader();
+        const readPromise = new Promise((resolve, reject) => {
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const dataUrl = await readPromise;
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = dataUrl;
+        });
+
+        const processedImg = await processSkinResolution(img);
+        const isSlim = detectSlimModel(processedImg);
+        const facePreviewUrl = extractFaceDataUrl(processedImg);
+
+        const cleanName = file.name
+          .replace(/\.[^/.]+$/, '')
+          .replace(/[_\-]+/g, ' ')
+          .trim();
+
+        const safeId = cleanName
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '_')
+          .slice(0, 16) || `skin_${generateRandomId(6)}`;
+
+        this.skins.push({
+          id: safeId,
+          name: cleanName || `ชุดที่ ${this.skins.length + 1}`,
+          model: isSlim ? 'alex' : 'steve',
+          faceUrl: facePreviewUrl,
+          skinURL: dataUrl,
           blob: file
         });
-        loadedCount++;
-        if (loadedCount === files.length) {
-          this.renderOutfits();
-          showToast(`เพิ่มสกินทั้งหมด ${loadedCount} ชุดเรียบร้อย!`, 'success');
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-    e.target.value = '';
+
+        loaded++;
+      } catch (err) {
+        console.warn(`Failed to process skin file ${file.name}:`, err);
+      }
+    }
+
+    if (loaded > 0) {
+      sfx.playPop();
+      showToast(`เพิ่มสกินสำเร็จ ${loaded} ชุด!`, 'success');
+      this.renderSkinList();
+    }
   }
 
-  renderOutfits() {
-    const w = this.wardrobes.find(item => item.uniq === this.activeWardrobeUniq);
+  renderSkinList() {
     const container = document.getElementById('wardrobe-outfit-list');
-    if (!w || !container) return;
+    const countBadge = document.getElementById('wardrobe-skin-count');
+    const emptyState = document.getElementById('wardrobe-empty-state');
+    const exportBtn = document.getElementById('wardrobe-export-btn');
 
-    container.innerHTML = '';
-    w.skinlist.forEach((outfit, index) => {
-      const card = document.createElement('div');
-      card.className = 'outfit-card';
+    if (countBadge) {
+      countBadge.textContent = `${this.skins.length} ชุด`;
+    }
 
-      const img = document.createElement('img');
-      img.className = 'outfit-thumbnail';
-      img.src = outfit.skinURL;
+    if (exportBtn) {
+      exportBtn.disabled = this.skins.length === 0;
+      exportBtn.style.opacity = this.skins.length === 0 ? '0.5' : '1';
+    }
 
-      const nameInput = document.createElement('input');
-      nameInput.type = 'text';
-      nameInput.className = 'mc-input outfit-name-input';
-      nameInput.value = outfit.name;
-      nameInput.oninput = (e) => {
-        outfit.name = e.target.value;
-      };
-
-      const delBtn = document.createElement('button');
-      delBtn.className = 'mc-btn mc-btn-danger';
-      delBtn.style.fontSize = '0.75rem';
-      delBtn.style.padding = '0.2rem 0.5rem';
-      delBtn.style.width = '100%';
-      delBtn.textContent = 'ลบชุดนี้';
-      delBtn.onclick = () => {
-        w.skinlist.splice(index, 1);
-        this.renderOutfits();
-      };
-
-      card.appendChild(img);
-      card.appendChild(nameInput);
-      card.appendChild(delBtn);
-      container.appendChild(card);
-    });
-  }
-
-  renderWardrobeList() {
-    const container = document.getElementById('wardrobe-grid-container');
     if (!container) return;
 
-    const filtered = this.searchQuery
-      ? this.wardrobes.filter(w => w.name.toLowerCase().includes(this.searchQuery))
-      : this.wardrobes;
-
-    container.innerHTML = '';
-
-    if (filtered.length === 0) {
-      container.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
-          ยังไม่มีข้อมูลตู้เสื้อผ้า กดปุ่ม <b>"+ เพิ่มตู้"</b> เพื่อเริ่มต้น
-        </div>
-      `;
+    if (this.skins.length === 0) {
+      if (emptyState) emptyState.style.display = 'block';
+      container.innerHTML = '';
       return;
     }
 
-    filtered.forEach(w => {
+    if (emptyState) emptyState.style.display = 'none';
+    container.innerHTML = '';
+
+    this.skins.forEach((skin, index) => {
       const card = document.createElement('div');
-      card.className = 'wardrobe-card';
+      card.className = 'skinpack-card';
 
       card.innerHTML = `
-        <div>
-          <div class="wardrobe-card-title">${w.name}</div>
-          <div class="wardrobe-card-count">จำนวนชุด: ${w.skinlist.length} ชุด</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
-            ผู้มีสิทธิ์เข้าถึง: ${w.allowUsername.length} คน
-          </div>
+        <div class="skinpack-card-avatar-wrap">
+          <img src="${skin.faceUrl || skin.skinURL}" alt="${skin.name}" class="skinpack-card-avatar">
+          <span class="skinpack-model-pill ${skin.model}">${skin.model === 'alex' ? 'Alex 3px' : 'Steve 4px'}</span>
         </div>
-        <div class="wardrobe-card-actions">
-          <button class="mc-btn mc-btn-primary" style="flex: 1;" data-edit="${w.uniq}">จัดการตู้</button>
-          <button class="mc-btn mc-btn-danger" data-delete="${w.uniq}">ลบ</button>
+        <div class="skinpack-card-body">
+          <input type="text" class="mc-input skinpack-name-input" value="${skin.name}" placeholder="ชื่อชุด...">
+          <div class="skinpack-card-controls">
+            <div class="skinpack-model-buttons">
+              <button type="button" class="skinpack-model-toggle ${skin.model === 'steve' ? 'active' : ''}" data-model="steve">
+                Steve (4px)
+              </button>
+              <button type="button" class="skinpack-model-toggle ${skin.model === 'alex' ? 'active' : ''}" data-model="alex">
+                Alex (3px)
+              </button>
+            </div>
+            <button type="button" class="skinpack-del-btn" title="ลบชุดนี้" data-del="${index}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
         </div>
       `;
 
-      card.querySelector(`[data-edit="${w.uniq}"]`).onclick = () => this.openWardrobeDetail(w.uniq);
-      card.querySelector(`[data-delete="${w.uniq}"]`).onclick = () => this.deleteWardrobe(w.uniq);
+      // Name change listener
+      const nameInput = card.querySelector('.skinpack-name-input');
+      if (nameInput) {
+        nameInput.addEventListener('input', (e) => {
+          skin.name = e.target.value.trim() || `Skin ${index + 1}`;
+        });
+      }
+
+      // Model toggle listeners
+      card.querySelectorAll('.skinpack-model-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const m = btn.dataset.model;
+          skin.model = m;
+          sfx.playClick();
+          this.renderSkinList();
+        });
+      });
+
+      // Delete listener
+      const delBtn = card.querySelector(`[data-del="${index}"]`);
+      if (delBtn) {
+        delBtn.addEventListener('click', () => {
+          sfx.playClick();
+          this.skins.splice(index, 1);
+          this.renderSkinList();
+          showToast('ลบสกินเรียบร้อย', 'info');
+        });
+      }
 
       container.appendChild(card);
     });
   }
 
-  renderAuthors() {
-    const container = document.getElementById('wardrobe-author-list');
-    if (!container) return;
-
-    container.innerHTML = '';
-    this.authors.forEach((author, index) => {
-      const row = document.createElement('div');
-      row.style.display = 'flex';
-      row.style.gap = '0.5rem';
-      row.style.marginBottom = '0.4rem';
-
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'mc-input';
-      input.value = author;
-      input.oninput = (e) => this.authors[index] = e.target.value;
-
-      const delBtn = document.createElement('button');
-      delBtn.className = 'mc-btn mc-btn-danger';
-      delBtn.textContent = 'ลบ';
-      delBtn.onclick = () => {
-        this.authors.splice(index, 1);
-        this.renderAuthors();
-      };
-
-      row.appendChild(input);
-      row.appendChild(delBtn);
-      container.appendChild(row);
-    });
-  }
-
-  /**
-   * Import existing .mcaddon and reconstruct entire state
-   */
-  async handleImportMcaddon(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
+  async handleImportMcpack(file) {
     try {
-      showToast('กำลังตรวจสอบและแยกไฟล์ .mcaddon...', 'info');
-      const parsed = await parseWardrobeArchive(file);
-      this.wardrobes = parsed.wardrobes;
-      this.addonVersion = parsed.addonVersion;
-      this.authors = parsed.authors;
+      showToast('กำลังแยกและอ่านไฟล์ .mcpack...', 'info');
+      const parsed = await parseSkinPackArchive(file);
 
-      this.renderWardrobeList();
-      this.renderAuthors();
-      showToast(`โหลดสำเร็จ! พบตู้เสื้อผ้า ${this.wardrobes.length} ตู้`, 'success');
+      if (parsed.packName) {
+        this.packName = parsed.packName;
+        const nameInput = document.getElementById('wardrobe-pack-name') || document.getElementById('wardrobe-detail-name');
+        if (nameInput) nameInput.value = this.packName;
+      }
+
+      if (parsed.version) {
+        this.version = parsed.version;
+      }
+
+      // Generate face avatars for imported skins
+      for (const s of parsed.skins) {
+        if (s.skinURL) {
+          const img = new Image();
+          await new Promise(res => {
+            img.onload = res;
+            img.onerror = res;
+            img.src = s.skinURL;
+          });
+          s.faceUrl = extractFaceDataUrl(img);
+        }
+      }
+
+      this.skins = parsed.skins;
+      this.renderSkinList();
+      sfx.playPop();
+      showToast(`โหลดสกินแพ็กสำเร็จ! พบทั้งหมด ${this.skins.length} ชุด`, 'success');
     } catch (err) {
       console.error(err);
-      showToast(err.userMessage || err.message || 'ไม่สามารถนำเข้าไฟล์ .mcaddon ได้', 'error');
+      showToast(err.userMessage || err.message || 'ไม่สามารถเปิดไฟล์ .mcpack ได้', 'error');
     }
-    e.target.value = '';
   }
 
-  /**
-   * Export fully working .mcaddon with Script API
-   */
-  async exportMcaddon() {
-    if (this.wardrobes.length === 0) {
-      showToast('กรุณาสร้างตู้เสื้อผ้าอย่างน้อย 1 ตู้ก่อนส่งออก', 'error');
+  async exportMcpack() {
+    if (this.skins.length === 0) {
+      showToast('กรุณาเพิ่มสกินอย่างน้อย 1 ชุดก่อนส่งออก', 'error');
       return;
     }
 
     try {
-      showToast('กำลังแพ็กเกจ .mcaddon...', 'info');
-      const generated = await createWardrobeAddon({
-        wardrobes: this.wardrobes,
-        addonVersion: this.addonVersion,
-        authors: this.authors
+      showToast('กำลังสร้างสกินแพ็ก (.mcpack)...', 'info');
+
+      // 1. Generate in-memory .mcpack package
+      const generated = await createSkinPack({
+        packName: this.packName || 'ZirconX Skin Pack',
+        version: this.version || [1, 0, 0],
+        skins: this.skins
       });
 
-      // Validate package before saving
-      const validationReport = await validateAddonPackage(generated.zip);
-      if (!validationReport.valid) {
-        console.error('Wardrobe validation failed:', validationReport.errors);
-        showToast(`ตรวจสอบพบข้อผิดพลาด: ${validationReport.errors[0]}`, 'error');
+      // 2. Validate package
+      const validation = await validateAddonPackage(generated.zip);
+      if (!validation.valid) {
+        console.error('Validation failed:', validation.errors);
+        showToast(`ตรวจสอบพบข้อผิดพลาด: ${validation.errors[0]}`, 'error');
         return;
       }
 
-      // Generate & save
-      const blob = await generated.zip.generateAsync({ type: 'blob' });
-      saveAs(blob, `zxskin_server_wardrobe_${Date.now()}.mcaddon`);
-      showToast('✓ ตรวจสอบผ่าน ดาวน์โหลดแอดออนเรียบร้อย', 'success');
+      // 3. Serializer & Download clean .mcpack file
+      await downloadMcpackFile(generated.zip, this.packName || 'ZirconX_SkinPack');
+
+      sfx.playLevelUp();
+      showToast('✓ ตรวจสอบผ่าน ดาวน์โหลดสกินแพ็ก (.mcpack) เรียบร้อย!', 'success');
     } catch (err) {
       console.error(err);
-      showToast(err.userMessage || err.message || 'เกิดข้อผิดพลาดในการแพ็กเกจแอดออน', 'error');
+      showToast(err.userMessage || err.message || 'เกิดข้อผิดพลาดในการสร้างสกินแพ็ก', 'error');
     }
   }
 }

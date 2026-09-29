@@ -153,9 +153,6 @@ function setupMoteEmitter(btnId, canvasId, moteCount = 18) {
 }
 
 export function initMinecraftFireParticles() {
-  // Top Header Credit Pill
-  setupMoteEmitter('mc-fire-button', 'mc-fire-canvas', 18);
-
   // Guide Section Creator Badge
   setupMoteEmitter('credit-fire-target', 'credit-fire-canvas', 16);
 }

@@ -7,6 +7,7 @@ import {
   detectSkinModelFromPixels
 } from '../core/skin/skinProcessor.js';
 import { AppError } from '../core/errors/AppError.js';
+import { saveAs } from 'file-saver';
 
 export function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -93,3 +94,70 @@ export function detectSlimModel(img) {
     return false;
   }
 }
+
+/**
+ * Export and trigger download of .mcaddon package without browser appending .zip
+ * Forces application/octet-stream and clean .mcaddon extension.
+ * @param {import('jszip')} zip
+ * @param {string} rawFilename
+ */
+export async function downloadMcaddonFile(zip, rawFilename) {
+  const cleanName = (rawFilename || 'addon')
+    .trim()
+    .replace(/\.zip$/i, '')
+    .replace(/\.mcaddon$/i, '');
+
+  const fileName = `${cleanName}.mcaddon`;
+
+  // Explicitly set mimeType to 'application/octet-stream' so Chrome, Edge, and mobile browsers
+  // do not treat the blob as application/zip and force-append .zip to the extension.
+  const blob = await zip.generateAsync({
+    type: 'blob',
+    mimeType: 'application/octet-stream',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 6 }
+  });
+
+  let fileToSave;
+  try {
+    fileToSave = new File([blob], fileName, { type: 'application/octet-stream' });
+  } catch (_) {
+    fileToSave = new Blob([blob], { type: 'application/octet-stream' });
+  }
+
+  saveAs(fileToSave, fileName);
+}
+
+/**
+ * Export and trigger download of .mcpack package without browser appending .zip
+ * Forces application/octet-stream and clean .mcpack extension.
+ * @param {import('jszip')} zip
+ * @param {string} rawFilename
+ */
+export async function downloadMcpackFile(zip, rawFilename) {
+  const cleanName = (rawFilename || 'skin_pack')
+    .trim()
+    .replace(/\.zip$/i, '')
+    .replace(/\.mcpack$/i, '')
+    .replace(/\.mcaddon$/i, '');
+
+  const fileName = `${cleanName}.mcpack`;
+
+  const blob = await zip.generateAsync({
+    type: 'blob',
+    mimeType: 'application/octet-stream',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 6 }
+  });
+
+  let fileToSave;
+  try {
+    fileToSave = new File([blob], fileName, { type: 'application/octet-stream' });
+  } catch (_) {
+    fileToSave = new Blob([blob], { type: 'application/octet-stream' });
+  }
+
+  saveAs(fileToSave, fileName);
+}
+
+

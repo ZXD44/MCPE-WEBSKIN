@@ -5,3 +5,5 @@ dist/
 .env
 .agents/
 customer_samples/
+desktop.ini
+*.log

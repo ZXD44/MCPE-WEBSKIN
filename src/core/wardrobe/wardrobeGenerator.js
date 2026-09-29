@@ -1,347 +1,166 @@
 /**
- * Headless Bedrock Server Wardrobe Addon Generator
- * Pure in-memory JSZip generator for multi-skin server addons
+ * Headless Bedrock Skin Pack Generator (.mcpack)
+ * Generates genuine Minecraft Bedrock Skin Packs in-memory without DOM dependencies.
+ * Automatically recognized by Minecraft Bedrock Dressing Room / Classic Skins.
  */
 import JSZip from 'jszip';
 import { generateUUID, generateRandomId } from '../../modules/utils.js';
 import { AppError, ErrorCode } from '../errors/AppError.js';
 
 /**
- * Generate a complete Server Wardrobe .mcaddon in-memory
- * @param {Object} config
- * @param {Array} config.wardrobes
- * @param {Array<number>} config.addonVersion
- * @param {Array<string>} config.authors
- * @param {Function} [config.fetchTemplate] - Optional template fetcher
- * @returns {Promise<{ zip: JSZip, namespace: string, outfitCount: number }>}
+ * Generate a complete Minecraft Bedrock Skin Pack (.mcpack) in-memory
+ * @param {Object} options
+ * @param {string} [options.packName]
+ * @param {string} [options.packId]
+ * @param {Array<number>} [options.version]
+ * @param {Array<number>} [options.addonVersion] legacy compat
+ * @param {string} [options.description]
+ * @param {Array<{ id?: string, name: string, model?: 'steve'|'alex', blob?: any, base64?: string, skinURL?: string }>} [options.skins]
+ * @param {Array} [options.wardrobes] legacy compat
+ * @param {any} [options.packIconData]
+ * @param {string} [options.headerUuid]
+ * @param {string} [options.moduleUuid]
+ * @returns {Promise<{ zip: JSZip, packName: string, serializeName: string, skinCount: number, headerUuid: string, moduleUuid: string, outfitCount: number }>}
  */
-export async function createWardrobeAddon({
-  wardrobes = [],
-  addonVersion = [1, 0, 0],
-  authors = ['ServerTeam', 'SkinProject'],
-  fetchTemplate = null
-}) {
-  if (!Array.isArray(wardrobes) || wardrobes.length === 0) {
-    throw new AppError(ErrorCode.WARDROBE_EMPTY);
+export async function createSkinPack(options = {}) {
+  let packName = options.packName || 'ZirconX Skin Pack';
+  let version = options.version || options.addonVersion || [1, 0, 0];
+  let description = options.description || 'Skin Pack created with ZirconX Skin Studio';
+  let skins = options.skins || [];
+
+  // Legacy wardrobe format adaptation: { wardrobes: [{ name, skinlist: [{ name, action, blob, base64 }] }] }
+  if (Array.isArray(options.wardrobes) && options.wardrobes.length > 0) {
+    skins = [];
+    options.wardrobes.forEach(w => {
+      if (Array.isArray(w.skinlist)) {
+        w.skinlist.forEach(s => {
+          skins.push({
+            id: s.action || generateRandomId(8),
+            name: s.name || 'Skin',
+            model: s.model || 'steve',
+            blob: s.blob,
+            base64: s.base64,
+            skinURL: s.skinURL
+          });
+        });
+      }
+    });
+    if (options.wardrobes[0]?.name) {
+      packName = options.wardrobes[0].name;
+    }
   }
+
+  if (!Array.isArray(skins) || skins.length === 0) {
+    throw new AppError(ErrorCode.WARDROBE_EMPTY, null, 'กรุณาเพิ่มสกินอย่างน้อย 1 ชุดก่อนส่งออก');
+  }
+
+  const cleanPackName = (packName || 'ZirconX Skin Pack').trim();
+  const serializeName = (options.packId || cleanPackName)
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '') || `zx_pack_${generateRandomId(6)}`;
+
+  const headerUuid = options.headerUuid || generateUUID();
+  const moduleUuid = options.moduleUuid || generateUUID();
 
   const zip = new JSZip();
-  const namespace = generateRandomId(10);
-  const bpUuid = generateUUID();
-  const rpUuid = generateUUID();
 
-  // Load base templates if fetcher provided or browser environment
-  const templateFiles = [
-    'ZirconX-SKIN_BP/items/zxskin.json',
-    'ZirconX-SKIN_RP/attachables/zxskin.json',
-    'ZirconX-SKIN_RP/materials/entity.material',
-    'ZirconX-SKIN_RP/textures/items/skin_item.png',
-    'ZirconX-SKIN_RP/textures/item_texture.json',
-    'packicon.png'
+  // 1. manifest.json with module type "skin_pack"
+  const manifestJson = {
+    format_version: 2,
+    header: {
+      name: cleanPackName,
+      description: description,
+      version: version,
+      uuid: headerUuid,
+      min_engine_version: [1, 21, 0]
+    },
+    modules: [
+      {
+        type: 'skin_pack',
+        uuid: moduleUuid,
+        version: version
+      }
+    ]
+  };
+
+  zip.file('manifest.json', JSON.stringify(manifestJson, null, 2));
+
+  // 2. skins.json and texture files
+  const skinsJson = {
+    serialize_name: serializeName,
+    localization_name: serializeName,
+    skins: []
+  };
+
+  const langLines = [
+    `skinpack.${serializeName}=${cleanPackName}`
   ];
 
-  for (const tPath of templateFiles) {
-    try {
-      let blob = null;
-      if (typeof fetchTemplate === 'function') {
-        blob = await fetchTemplate(tPath);
-      } else if (typeof fetch === 'function' && typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) {
-        const resp = await fetch(`${import.meta.env.BASE_URL}templates/${tPath}`);
-        if (resp.ok) blob = await resp.blob();
-      }
-      if (blob) {
-        if (tPath === 'packicon.png') {
-          zip.file('ZirconX-SKIN_BP/pack_icon.png', blob);
-          zip.file('ZirconX-SKIN_RP/pack_icon.png', blob);
-        } else {
-          zip.file(tPath, blob);
-        }
-      }
-    } catch (_) {}
+  for (let i = 0; i < skins.length; i++) {
+    const s = skins[i];
+    const safeSkinId = (s.id || s.name || `skin_${i + 1}`)
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9_]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_+|_+$/g, '') || `skin_${i + 1}`;
+
+    const textureFileName = `${safeSkinId}.png`;
+    const isSlim = s.model === 'alex';
+    const geometry = isSlim ? 'geometry.humanoid.customSlim' : 'geometry.humanoid.custom';
+
+    skinsJson.skins.push({
+      localization_name: safeSkinId,
+      geometry: geometry,
+      texture: textureFileName,
+      type: 'free'
+    });
+
+    const displayName = (s.name || `Skin ${i + 1}`).trim();
+    langLines.push(`skin.${serializeName}.${safeSkinId}=${displayName}`);
+
+    if (s.blob) {
+      zip.file(textureFileName, s.blob);
+    } else if (s.base64) {
+      zip.file(textureFileName, s.base64, { base64: true });
+    } else if (s.skinURL && typeof fetch === 'function') {
+      try {
+        const resp = await fetch(s.skinURL);
+        const b = await resp.blob();
+        zip.file(textureFileName, b);
+      } catch (_) {}
+    }
   }
 
-  // 1. Generate Script API main.js
-  const sanitizedPlayerData = wardrobes.map(w => ({
-    uniq: w.uniq,
-    name: w.name,
-    allowUsername: w.allowUsername || [],
-    skinlist: (w.skinlist || []).map(s => ({
-      name: s.name,
-      action: s.action
-    }))
-  }));
+  zip.file('skins.json', JSON.stringify(skinsJson, null, 2));
 
-  const scriptContent = `/**
- * Minecraft Bedrock Server Wardrobe System
- * Generated by ZirconX Skin Project
- */
-import { world, system } from '@minecraft/server';
-import { ActionFormData, MessageFormData } from '@minecraft/server-ui';
+  // 3. texts/en_US.lang, texts/th_TH.lang, texts/languages.json
+  const langContent = langLines.join('\n') + '\n';
+  const languagesJson = JSON.stringify(['en_US', 'th_TH'], null, 2);
 
-let playerData = ${JSON.stringify(sanitizedPlayerData, null, 2)};
+  zip.file('texts/en_US.lang', langContent);
+  zip.file('texts/th_TH.lang', langContent);
+  zip.file('texts/languages.json', languagesJson);
 
-world.beforeEvents.itemUse.subscribe(event => {
-    let source = event.source;
-    if (event.itemStack.typeId === "zxskin:skin" || event.itemStack.typeId === "zirconx:skin" || event.itemStack.typeId === "zxd44:skin") {
-        system.run(() => titleScreen(source));
-    }
-
-    function titleScreen(player) {
-        const wardrobeData = playerData.filter(e => e.allowUsername.includes(player.name));
-        const form = new MessageFormData()
-            .title("ตู้เสื้อผ้า")
-            .body("ระบบจัดการและเปลี่ยนชุดตัวละคร")
-            .button1(wardrobeData.length > 0 ? "เปิดตู้เสื้อผ้า" : "§cไม่มีสิทธิ์เข้าถึงตู้เสื้อผ้า")
-            .button2("ชุดเริ่มต้น");
-
-        form.show(player).then(choice => {
-            if (choice.selection === 0) {
-                if (wardrobeData.length > 0) wardrobeSelection(player, wardrobeData);
-                else player.runCommand("title @s actionbar §cคุณไม่มีสิทธิ์เข้าถึงตู้เสื้อผ้า");
-            } else {
-                if (choice.canceled) return;
-                player.runCommand("title @s actionbar §aเปลี่ยนเป็นชุดเริ่มต้นเรียบร้อย");
-                return player.runCommand('event entity @s ${namespace}:humanoid');
-            }
-        });
-    }
-
-    function wardrobeSelection(player, wardrobe) {
-        const form = new ActionFormData()
-            .title('เลือกตู้เสื้อผ้า')
-            .body('สวัสดี §e' + player.name + '§r กรุณาเลือกตู้ที่ต้องการ');
-
-        wardrobe.forEach(data => {
-            form.button(data.name);
-        });
-
-        form.show(player).then(choice => {
-            if (choice.canceled) return;
-            return skinSelection(player, wardrobe[choice.selection].skinlist, wardrobe);
-        });
-    }
-
-    function skinSelection(player, skinlist, wardrobe) {
-        const form = new ActionFormData()
-            .title('เลือกชุดสกิน')
-            .body('เลือกชุดที่ต้องการสวมใส่');
-
-        skinlist.forEach(skindata => {
-            form.button(skindata.name);
-        });
-
-        form.show(player).then(choice => {
-            if (choice.canceled) return wardrobeSelection(player, wardrobe);
-            player.runCommand('title @s actionbar §aเปลี่ยนชุดเป็น "' + skinlist[choice.selection].name + '" เรียบร้อยแล้ว');
-            player.runCommand('event entity @s ${namespace}:' + skinlist[choice.selection].action);
-        });
-    }
-});
-`;
-
-  zip.file('ZirconX-SKIN_BP/scripts/main.js', scriptContent);
-
-  // 2. Manifests (BP & RP)
-  const bpManifest = {
-    format_version: 2,
-    metadata: {
-      authors,
-      generated_with: { "ZirconX_Project": ["2.0.0"] }
-    },
-    header: {
-      name: `ตู้เสื้อผ้า ZirconX ${addonVersion.join(".")}`,
-      description: "ระบบตู้เสื้อผ้าและสลับชุดสำหรับเซิร์ฟเวอร์ พัฒนาโดย ZirconX",
-      min_engine_version: [1, 21, 60],
-      uuid: bpUuid,
-      version: addonVersion
-    },
-    modules: [
-      { type: "data", uuid: generateUUID(), version: addonVersion },
-      { type: "script", language: "javascript", uuid: generateUUID(), entry: "scripts/main.js", version: addonVersion }
-    ],
-    dependencies: [
-      { uuid: rpUuid, version: addonVersion },
-      { module_name: "@minecraft/server", version: "2.1.0" },
-      { module_name: "@minecraft/server-ui", version: "2.0.0" }
-    ]
-  };
-
-  const rpManifest = {
-    format_version: 2,
-    metadata: {
-      authors,
-      generated_with: { "ZirconX_Project": ["2.0.0"] }
-    },
-    header: {
-      name: `ตู้เสื้อผ้า ZirconX ${addonVersion.join(".")}`,
-      description: "ระบบตู้เสื้อผ้าและสลับชุดสำหรับเซิร์ฟเวอร์ พัฒนาโดย ZirconX",
-      min_engine_version: [1, 21, 60],
-      uuid: rpUuid,
-      version: addonVersion
-    },
-    modules: [
-      { type: "resources", uuid: generateUUID(), version: addonVersion }
-    ],
-    dependencies: [
-      { uuid: bpUuid, version: addonVersion }
-    ]
-  };
-
-  zip.file('ZirconX-SKIN_BP/manifest.json', JSON.stringify(bpManifest, null, 2));
-  zip.file('ZirconX-SKIN_RP/manifest.json', JSON.stringify(rpManifest, null, 2));
-
-  // 3. Render Controller & Player Entities
-  const allOutfits = [];
-  wardrobes.forEach(w => {
-    (w.skinlist || []).forEach(s => allOutfits.push(s));
-  });
-
-  const renderControllerJson = {
-    format_version: "1.10.0",
-    render_controllers: {
-      "controller.render.player.1st_person": {
-        arrays: {
-          textures: {
-            "array.skins": ["Texture.default", ...allOutfits.map(o => `Texture.${o.action}`)]
-          }
-        },
-        geometry: "Geometry.default",
-        materials: [{ "*": "Material.default" }],
-        textures: ["array.skins[query.mark_variant]"],
-        part_visibility: [
-          { "*": false },
-          { rightArm: "query.get_equipped_item_name == ''" },
-          { rightSleeve: "query.get_equipped_item_name == ''" }
-        ]
-      },
-      "controller.render.skinpack": {
-        geometry: "geometry.default",
-        materials: [{ "*": "Material.default" }],
-        textures: ["array.skins[query.mark_variant]"],
-        part_visibility: [{ "*": true }, { head: true }],
-        arrays: {
-          textures: {
-            "array.skins": ["Texture.default", ...allOutfits.map(o => `Texture.${o.action}`)]
-          },
-          geometries: { "array.geo": ["Geometry.default"] }
-        }
-      },
-      "controller.render.player.spectator": {
-        geometry: "'array.geo[query.mark_variant != undefined ? query.mark_variant : 0]'",
-        materials: [{ "*": "Material.spectator" }],
-        textures: ["array.skins[query.mark_variant]"],
-        part_visibility: [{ "*": false }, { head: true }],
-        ignore_lighting: true,
-        light_color_multiplier: 2.5,
-        overlay_color: { r: 0, g: 0.2, b: 0.5, a: 0.8 },
-        color: { r: 0.7, g: 0.9, b: 1, a: 0.5 }
-      }
-    }
-  };
-
-  const playerEntityRpJson = {
-    format_version: "1.10.0",
-    "minecraft:client_entity": {
-      description: {
-        identifier: "minecraft:player",
-        materials: {
-          default: "entity_alphatest",
-          solid: "entity_alphatest",
-          spectator: "player_spectator"
-        },
-        textures: {
-          default: "textures/entity/alex"
-        },
-        geometry: {
-          default: "geometry.humanoid",
-          cape: "geometry.cape"
-        },
-        render_controllers: [
-          { "controller.render.player.1st_person": "variable.is_first_person && !q.is_spectator" },
-          { "controller.render.skinpack": "!variable.is_first_person && !variable.map_face_icon && !q.is_spectator" },
-          { "controller.render.player.spectator": "q.is_spectator" }
-        ],
-        enable_attachables: true
-      }
-    }
-  };
-
-  const playerEntityBpJson = {
-    format_version: "1.21.60",
-    "minecraft:entity": {
-      description: {
-        identifier: "minecraft:player",
-        is_spawnable: false,
-        is_summonable: false,
-        is_experimental: false
-      },
-      component_groups: {
-        [`${namespace}:humanoid`]: {
-          "minecraft:mark_variant": { value: 0 }
-        }
-      },
-      components: {
-        "minecraft:type_family": { family: ["player"] }
-      },
-      events: {
-        [`${namespace}:humanoid`]: {
-          add: { component_groups: [`${namespace}:humanoid`] }
-        }
-      }
-    }
-  };
-
-  // Populate variants in RP & BP
-  allOutfits.forEach((outfit, idx) => {
-    const markVal = idx + 1;
-    playerEntityRpJson["minecraft:client_entity"].description.textures[outfit.action] = `textures/skin/${outfit.action}`;
-
-    playerEntityBpJson["minecraft:entity"].component_groups[`${namespace}:${outfit.action}`] = {
-      "minecraft:mark_variant": { value: markVal }
-    };
-    playerEntityBpJson["minecraft:entity"].events[`${namespace}:${outfit.action}`] = {
-      add: { component_groups: [`${namespace}:${outfit.action}`] }
-    };
-
-    // Add skin texture file
-    if (outfit.blob) {
-      zip.file(`ZirconX-SKIN_RP/textures/skin/${outfit.action}.png`, outfit.blob);
-    } else if (outfit.skinURL && typeof fetch === 'function') {
-      zip.file(`ZirconX-SKIN_RP/textures/skin/${outfit.action}.png`, fetch(outfit.skinURL).then(r => r.blob()));
-    } else if (outfit.base64) {
-      zip.file(`ZirconX-SKIN_RP/textures/skin/${outfit.action}.png`, outfit.base64, { base64: true });
-    }
-  });
-
-  zip.file('ZirconX-SKIN_RP/render_controllers/player.render_controller.json', JSON.stringify(renderControllerJson, null, 2));
-  zip.file('ZirconX-SKIN_RP/entity/player.entity.json', JSON.stringify(playerEntityRpJson, null, 2));
-  zip.file('ZirconX-SKIN_BP/entities/player.json', JSON.stringify(playerEntityBpJson, null, 2));
-
-  // 4. Localization texts (Thai & English)
-  const wardrobeLang = [
-    "## ZirconX Wardrobe Localization",
-    "pack.name=ZirconX Wardrobe",
-    "pack.description=Server Wardrobe System by ZirconX",
-    "item.zxskin:skin.name=ตู้เสื้อผ้า (Wardrobe)",
-    "item.zxskin:skin=ตู้เสื้อผ้า (Wardrobe)",
-    "item.zirconx:skin.name=ตู้เสื้อผ้า (Wardrobe)",
-    "item.zirconx:skin=ตู้เสื้อผ้า (Wardrobe)",
-    "item.zxd44:skin.name=ตู้เสื้อผ้า (Wardrobe)",
-    "item.zxd44:skin=ตู้เสื้อผ้า (Wardrobe)"
-  ].join('\n') + '\n';
-  const wardrobeLangsJson = JSON.stringify(['en_US', 'th_TH'], null, 2);
-
-  zip.file('ZirconX-SKIN_RP/texts/en_US.lang', wardrobeLang);
-  zip.file('ZirconX-SKIN_RP/texts/th_TH.lang', wardrobeLang);
-  zip.file('ZirconX-SKIN_RP/texts/languages.json', wardrobeLangsJson);
-
-  zip.file('ZirconX-SKIN_BP/texts/en_US.lang', wardrobeLang);
-  zip.file('ZirconX-SKIN_BP/texts/th_TH.lang', wardrobeLang);
-  zip.file('ZirconX-SKIN_BP/texts/languages.json', wardrobeLangsJson);
+  // 4. pack_icon.png
+  if (options.packIconData) {
+    zip.file('pack_icon.png', options.packIconData);
+  } else if (skins[0]?.blob) {
+    zip.file('pack_icon.png', skins[0].blob);
+  }
 
   return {
     zip,
-    namespace,
-    outfitCount: allOutfits.length
+    packName: cleanPackName,
+    serializeName,
+    skinCount: skins.length,
+    headerUuid,
+    moduleUuid,
+    outfitCount: skins.length
   };
 }
+
+// Backward compatibility alias
+export const createWardrobeAddon = createSkinPack;

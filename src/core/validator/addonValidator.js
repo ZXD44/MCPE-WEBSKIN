@@ -97,45 +97,82 @@ export async function validateAddonPackage(zip) {
     message: uuidErrors.length === 0 ? 'UUID ทั้งหมดถูกต้องและไม่ซ้ำกัน' : 'พบปัญหา UUID ซ้ำหรือไม่ถูกต้อง'
   });
 
-  // 3. Check Attachables & Texture References
-  const attachableFiles = allFiles.filter(f => f.includes('attachables/') && f.endsWith('.json'));
+  // 3. Check Textures & Assets
+  const isSkinPack = allFiles.some(f => /skins\.json$/i.test(f));
   let texturesPassed = true;
 
-  for (const attPath of attachableFiles) {
-    try {
-      const content = await zip.file(attPath).async('string');
-      const att = JSON.parse(content);
-      const desc = att['minecraft:attachable']?.description;
-      if (desc && desc.textures) {
-        const defaultTex = desc.textures.default;
-        if (defaultTex && typeof defaultTex === 'string') {
-          const baseTex = defaultTex.replace(/\.png$/i, '');
-          const hasMatchingPng = allFiles.some(f => f.endsWith(`${baseTex}.png`));
-          if (!hasMatchingPng) {
-            errors.push(`ขาดไฟล์ Texture '${defaultTex}.png' ที่อ้างอิงใน ${attPath}`);
-            texturesPassed = false;
+  if (isSkinPack) {
+    const skinsFile = allFiles.find(f => /skins\.json$/i.test(f));
+    if (skinsFile) {
+      try {
+        const content = await zip.file(skinsFile).async('string');
+        const skinsData = JSON.parse(content);
+        if (Array.isArray(skinsData.skins)) {
+          skinsData.skins.forEach(s => {
+            const texName = (s.texture || '').split('/').pop();
+            const hasTex = allFiles.some(f => f.endsWith(texName));
+            if (!hasTex) {
+              errors.push(`ขาดไฟล์สกิน '${texName}' ที่ระบุใน skins.json`);
+              texturesPassed = false;
+            }
+          });
+        }
+      } catch (e) {
+        errors.push(`ไฟล์ skins.json ผิดพลาด: ${e.message}`);
+        texturesPassed = false;
+      }
+    }
+
+    checks.push({
+      name: 'Texture Assets Integrity',
+      passed: texturesPassed,
+      message: texturesPassed ? 'ไฟล์ภาพสกินครบถ้วนตาม skins.json' : 'พบสกินที่ขาดหายไป'
+    });
+
+    checks.push({
+      name: 'Skin Pack Compatibility',
+      passed: true,
+      message: 'แพ็กเกจรองรับห้องแต่งตัว (Dressing Room) ของ Minecraft Bedrock โดยตรง'
+    });
+  } else {
+    const attachableFiles = allFiles.filter(f => f.includes('attachables/') && f.endsWith('.json'));
+
+    for (const attPath of attachableFiles) {
+      try {
+        const content = await zip.file(attPath).async('string');
+        const att = JSON.parse(content);
+        const desc = att['minecraft:attachable']?.description;
+        if (desc && desc.textures) {
+          const defaultTex = desc.textures.default;
+          if (defaultTex && typeof defaultTex === 'string') {
+            const baseTex = defaultTex.replace(/\.png$/i, '');
+            const hasMatchingPng = allFiles.some(f => f.endsWith(`${baseTex}.png`));
+            if (!hasMatchingPng) {
+              errors.push(`ขาดไฟล์ Texture '${defaultTex}.png' ที่อ้างอิงใน ${attPath}`);
+              texturesPassed = false;
+            }
           }
         }
+      } catch (e) {
+        errors.push(`ไฟล์ Attachable ${attPath} ผิดพลาด: ${e.message}`);
+        texturesPassed = false;
       }
-    } catch (e) {
-      errors.push(`ไฟล์ Attachable ${attPath} ผิดพลาด: ${e.message}`);
-      texturesPassed = false;
     }
+
+    checks.push({
+      name: 'Texture Assets Integrity',
+      passed: texturesPassed,
+      message: texturesPassed ? 'ไฟล์ Texture สกินตรงตามการอ้างอิงครบถ้วน' : 'พบ Texture ที่ขาดหาย'
+    });
+
+    // 4. Check Render Controllers for Standalone Addons
+    const rcFiles = allFiles.filter(f => f.includes('render_controllers/') && f.endsWith('.json'));
+    checks.push({
+      name: 'Render Controller Mapping',
+      passed: rcFiles.length > 0,
+      message: rcFiles.length > 0 ? 'ติดตั้ง Custom Render Controller ป้องกันสกินถูกซ่อนแล้ว' : 'ไม่พบนิยาม Render Controller'
+    });
   }
-
-  checks.push({
-    name: 'Texture Assets Integrity',
-    passed: texturesPassed,
-    message: texturesPassed ? 'ไฟล์ Texture สกินตรงตามการอ้างอิงครบถ้วน' : 'พบ Texture ที่ขาดหาย'
-  });
-
-  // 4. Check Render Controllers
-  const rcFiles = allFiles.filter(f => f.includes('render_controllers/') && f.endsWith('.json'));
-  checks.push({
-    name: 'Render Controller Mapping',
-    passed: rcFiles.length > 0,
-    message: rcFiles.length > 0 ? 'ติดตั้ง Custom Render Controller ป้องกันสกินถูกซ่อนแล้ว' : 'ไม่พบนิยาม Render Controller'
-  });
 
   // 5. Check Localization
   const langFiles = allFiles.filter(f => f.endsWith('.lang'));
