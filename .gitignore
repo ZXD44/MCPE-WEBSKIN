@@ -3,7 +3,6 @@ dist/
 .DS_Store
 *.local
 .env
-.agents/
 customer_samples/
 desktop.ini
 *.log

@@ -358,3 +358,70 @@
 .view-back-home-btn:active {
   transform: translateY(1px);
 }
+
+/* ==========================================================================
+   CHANGELOG & UPDATE LOGS
+   ========================================================================== */
+.changelog-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--mc-border-mid);
+  border-radius: var(--r-sm);
+  padding: 1.15rem;
+  margin-top: 0.5rem;
+}
+
+.changelog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.changelog-ver {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.changelog-ver-title {
+  font-family: var(--font-pixel), var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.changelog-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--r-xs);
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.changelog-date {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.changelog-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.changelog-list li {
+  margin-bottom: 0.4rem;
+}
+
+.changelog-list li strong {
+  color: #ffffff;
+}
+
