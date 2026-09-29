@@ -157,10 +157,10 @@
       80%, 100% { opacity: 0; }
     }
   </style>
-  <script type="module" crossorigin src="/MCPE-WEBSKIN/assets/index-CYMq9Gyp.js"></script>
+  <script type="module" crossorigin src="/MCPE-WEBSKIN/assets/index-N2SlAml5.js"></script>
   <link rel="modulepreload" crossorigin href="/MCPE-WEBSKIN/assets/jszip-_Q8fK9bB.js">
   <link rel="modulepreload" crossorigin href="/MCPE-WEBSKIN/assets/skinview3d-DkPYXYIA.js">
-  <link rel="stylesheet" crossorigin href="/MCPE-WEBSKIN/assets/index-th4VhrpH.css">
+  <link rel="stylesheet" crossorigin href="/MCPE-WEBSKIN/assets/index-BPBFkloF.css">
 </head>
 
 <body>
@@ -751,11 +751,11 @@
       </section>
 
       <!-- ===================================================================
-           5. GUIDE VIEW (วิธีติดตั้ง)
+           5. GUIDE VIEW (วิธีติดตั้ง & คู่มือ)
            =================================================================== -->
       <section id="section-guide" class="page-section">
         <div class="view-top-bar">
-          <div class="view-heading">วิธีติดตั้งแอดออน</div>
+          <div class="view-heading">คู่มือและการใช้งาน</div>
           <button class="view-back-home-btn" data-goto="home" title="กลับหน้าหลัก">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
@@ -764,115 +764,139 @@
           </button>
         </div>
 
+        <!-- Guide Sub-navigation Bar -->
+        <div class="guide-nav-bar">
+          <button type="button" class="guide-tab-btn active" data-guidetab="install">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>วิธีติดตั้ง</span>
+          </button>
+          <button type="button" class="guide-tab-btn" data-guidetab="tips">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <span>สกินตรงปก</span>
+          </button>
+          <button type="button" class="guide-tab-btn" data-guidetab="changelog">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>ประวัติอัปเดต</span>
+          </button>
+        </div>
+
         <div style="display: flex; flex-direction: column; gap: 0.85rem;">
-          <!-- 1. ติดตั้งสกินแพ็ก .mcpack -->
-          <div class="tool-card" style="cursor: default; align-items: flex-start;">
-            <div class="tool-icon-wrap ember">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <line x1="12" y1="3" x2="12" y2="21" />
-                <circle cx="8" cy="12" r="1" />
-                <circle cx="16" cy="12" r="1" />
-              </svg>
+          <!-- 1. ติดตั้งแอดออน/สกินแพ็ก (Install Panel) -->
+          <div id="guide-panel-install" class="guide-panel active">
+            <div class="guide-step-card">
+              <div class="guide-step-num">1</div>
+              <div class="guide-step-content">
+                <div class="guide-step-title">สกินแพ็กตู้เสื้อผ้า (.mcpack) — ห้องแต่งตัว</div>
+                <div class="guide-step-desc">
+                  แตะหรือดับเบิลคลิกไฟล์ <strong>.mcpack</strong> ที่ดาวน์โหลด เกม Minecraft จะเปิดและนำเข้าสู่ <strong>ห้องแต่งตัว (Dressing Room &gt; Classic Skins)</strong> ทันที สามารถเลือกสวมใส่ได้ทั้งในโหมดเล่นคนเดียวและเซิร์ฟเวอร์
+                </div>
+              </div>
             </div>
-            <div class="tool-info">
-              <div class="tool-title">สกินแพ็ก (.mcpack) — ห้องแต่งตัว</div>
-              <div class="tool-sub">
-                1. แตะหรือดับเบิลคลิกไฟล์ <strong>.mcpack</strong> ที่ดาวน์โหลด<br>
-                2. เกม Minecraft จะเปิดและนำเข้าสู่ <strong>ห้องแต่งตัว (Dressing Room &gt; Classic Skins)</strong> อัตโนมัติ เลือกใส่เล่นได้ทันทีทั้งแบบคนเดียวและเซิร์ฟเวอร์
+
+            <div class="guide-step-card">
+              <div class="guide-step-num">2</div>
+              <div class="guide-step-content">
+                <div class="guide-step-title">แอดออนสกินสวมใส่ (.mcaddon) — หมวก/เกราะ</div>
+                <div class="guide-step-desc">
+                  แตะหรือดับเบิลคลิกไฟล์ <strong>.mcaddon</strong> เพื่อนำเข้าเกม จากนั้นไปที่ <strong>การตั้งค่าโลก (World Settings) &gt; Behavior &amp; Resource Packs</strong> แล้วเปิดใช้งาน (Activate) สวมใส่ไอเทมในช่องเกราะตามที่กำหนดไว้
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- 2. ติดตั้งสกินไอเทมสวมใส่ .mcaddon (Mobile) -->
-          <div class="tool-card" style="cursor: default; align-items: flex-start;">
-            <div class="tool-icon-wrap blood">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-                <line x1="12" y1="18" x2="12.01" y2="18" />
-              </svg>
+          <!-- 2. สกินตรงปก & ข้อแนะนำ (Tips Panel) -->
+          <div id="guide-panel-tips" class="guide-panel">
+            <div class="tips-grid">
+              <div class="tips-box tips-box-good">
+                <div class="tips-box-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  <span>แนะนำ (ตรงปก 100%)</span>
+                </div>
+                <ul class="tips-box-list">
+                  <li>ไฟล์ <strong>.PNG ที่มีพื้นหลังโปร่งใส</strong> (Transparent)</li>
+                  <li>ดาวน์โหลดจากเว็บสกินมาตรฐาน เช่น NameMC, Skindex, PlanetMinecraft</li>
+                  <li>สกินมาตรฐาน <strong>64x64</strong> หรือสกิน HD 128x128 แท้</li>
+                </ul>
+              </div>
+
+              <div class="tips-box tips-box-bad">
+                <div class="tips-box-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                  </svg>
+                  <span>ควรหลีกเลี่ยง</span>
+                </div>
+                <ul class="tips-box-list">
+                  <li>ภาพแฟนอาร์ต วอลเปเปอร์ หรือภาพที่มีตัวหนังสือบังหน้า</li>
+                  <li>ไฟล์ JPG ที่มีพื้นหลังทึบสีดำ/ขาว (จะทำให้เลเยอร์นอกกลายเป็นกล่องทึบ)</li>
+                  <li>ภาพแคปหน้าจอที่มีขอบส่วนเกิน ไม่ตรงกริด UV สกิน</li>
+                </ul>
+              </div>
             </div>
-            <div class="tool-info">
-              <div class="tool-title">แอดออนสกินสวมใส่ (.mcaddon) — มือถือ</div>
-              <div class="tool-sub">
-                1. แตะไฟล์ .mcaddon แล้วเลือกเปิดด้วยแอป Minecraft<br>
-                2. เปิดการตั้งค่าโลก &gt; เปิดใช้งาน Behavior &amp; Resource Packs
+
+            <div class="guide-step-card" style="border-color: rgba(56, 189, 248, 0.35); background: rgba(56, 189, 248, 0.04);">
+              <div class="guide-step-num" style="background: #38bdf8; color: #082f49;">💡</div>
+              <div class="guide-step-content">
+                <div class="guide-step-title" style="color: #38bdf8;">ระบบช่วยปรับภาพอัตโนมัติ (Auto-Resampling)</div>
+                <div class="guide-step-desc">
+                  ไม่ต้องกังวลหากอัปโหลดไฟล์ภาพ JPG หรือภาพขนาดอิสระ (เช่น 1452px, 1254px, 800px) ระบบ ZirconX Studio จะแปลงเป็น PNG และย่อ UV ลงสู่ 64x64 มาตรฐาน Minecraft Bedrock ให้อัตโนมัติทันที
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- 3. ติดตั้งสกินไอเทมสวมใส่ .mcaddon (PC) -->
-          <div class="tool-card" style="cursor: default; align-items: flex-start;">
-            <div class="tool-icon-wrap purple">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                <line x1="8" y1="21" x2="16" y2="21" />
-                <line x1="12" y1="17" x2="12" y2="21" />
-              </svg>
-            </div>
-            <div class="tool-info">
-              <div class="tool-title">แอดออนสกินสวมใส่ (.mcaddon) — คอมพิวเตอร์</div>
-              <div class="tool-sub">
-                1. ดับเบิลคลิกไฟล์ .mcaddon เพื่อติดตั้งลงเกม Minecraft Windows<br>
-                2. สวมใส่ไอเทมในช่องหมวก/เกราะตามที่ตั้งค่าไว้
+          <!-- 3. บันทึกประวัติการอัปเดต (Changelog Panel) -->
+          <div id="guide-panel-changelog" class="guide-panel">
+            <div class="changelog-card">
+              <div class="changelog-header">
+                <div class="changelog-ver">
+                  <span class="changelog-ver-title">ZIRCONX STUDIO</span>
+                  <span class="changelog-badge">v1.2.0 ล่าสุด</span>
+                </div>
+                <span class="changelog-date">29 ก.ย. 2026</span>
               </div>
-            </div>
-          </div>
+              <ul class="changelog-list">
+                <li><strong>Universal Auto-Resampling:</strong> ปลดล็อกให้รองรับภาพสกินที่มีขนาดพิกเซลอิสระ (เช่น 1452x1452, 1254x1254, 800x800) โดยย่อและจัดตำแหน่ง UV สู่ 64x64 มาตรฐาน Minecraft Bedrock อัตโนมัติ</li>
+                <li><strong>Full JPG/JPEG Conversion:</strong> รองรับภาพ .jpg และแปลงเป็น .png แท้ 100% ผ่าน Canvas ป้องกันปัญหาไฟล์สกินชำรุดในเกม</li>
+                <li><strong>Real-time Notification Toasts:</strong> เพิ่มระบบแจ้งเตือน Toast ครบทุกกรณี ทั้งแจ้งเมื่อปรับขนาดภาพสำเร็จ และแจ้งเตือนข้อผิดพลาดชัดเจน</li>
+                <li><strong>Official Skin Pack (.mcpack):</strong> ยกเครื่องระบบตู้เสื้อผ้าเป็น Skin Pack มาตรฐาน นำเข้าห้องแต่งตัว Dressing Room ได้โดยตรง</li>
+                <li><strong>Clean File Extensions:</strong> แก้ปัญหานามสกุลไฟล์ซ้ำซ้อน .mcaddon.zip / .mcpack.zip ให้ดาวน์โหลดเป็น .mcaddon และ .mcpack ล้วนสะอาด 100%</li>
+                <li><strong>Vercel CI/CD Stabilization:</strong> ป้องกัน Build Error บนกิ่ง gh-pages ด้วยคำสั่ง ignoreCommand ข้ามการ Build กิ่งสำเร็จรูป</li>
+              </ul>
 
-          <!-- 4. คำแนะนำเรื่องไฟล์สกินที่ถูกต้อง (Skin Guidelines) -->
-          <div class="tool-card" style="cursor: default; align-items: flex-start; border-color: rgba(56, 189, 248, 0.35); background: rgba(56, 189, 248, 0.04);">
-            <div class="tool-icon-wrap cyan">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="16" x2="12" y2="12" />
-                <line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
-            </div>
-            <div class="tool-info">
-              <div class="tool-title" style="color: #38bdf8;">คำแนะนำไฟล์สกิน (สำคัญ!)</div>
-              <div class="tool-sub" style="color: var(--text-secondary); line-height: 1.55;">
-                • แนะนำให้ใช้ไฟล์ <strong>.PNG ที่มีพื้นหลังโปร่งใส (Transparent)</strong> จากเว็บสกินมาตรฐาน (NameMC, Skindex)<br>
-                • หลีกเลี่ยงภาพวาดแฟนอาร์ตหรือภาพที่มีฉากหลังทึบ เพื่อไม่ให้เลเยอร์นอกกลายเป็นกล่องดำครอบตัวละคร<br>
-                • หากอัปโหลดไฟล์ภาพ JPG หรือภาพขนาดอิสระ (เช่น 1452px, 1254px) ระบบจะแปลงเป็น PNG และย่อเป็น 64x64 ให้อัตโนมัติ
+              <div class="changelog-header" style="margin-top: 1rem;">
+                <div class="changelog-ver">
+                  <span class="changelog-ver-title">ZIRCONX STUDIO</span>
+                  <span class="changelog-badge" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border-color: rgba(148, 163, 184, 0.35);">v1.1.0</span>
+                </div>
+                <span class="changelog-date">14 ก.ย. 2026</span>
               </div>
+              <ul class="changelog-list">
+                <li><strong>Pure Client-Side 100%:</strong> ประมวลผลบนเบราว์เซอร์ทั้งหมดผ่าน In-Memory JSZip ปลอดภัย ไม่พึ่งพา Server</li>
+                <li><strong>Dual-Model Engine:</strong> สลับโมเดล Steve (แขน 4px) และ Alex (แขน 3px) แบบเรียลไทม์</li>
+                <li><strong>Bedrock 1.21.10+ Standard:</strong> อัปเดต Custom Render Controller รองรับปอยผมและวิกยาว</li>
+                <li><strong>Zero-Dependency SFX:</strong> เสียงเอฟเฟกต์สังเคราะห์ในตัวผ่าน Web Audio API</li>
+              </ul>
             </div>
-          </div>
-
-          <!-- 5. บันทึกประวัติการอัปเดต (Update Logs & Changelog) -->
-          <div class="changelog-card">
-            <div class="changelog-header">
-              <div class="changelog-ver">
-                <span class="changelog-ver-title">ZIRCONX STUDIO</span>
-                <span class="changelog-badge">v1.2.0 ล่าสุด</span>
-              </div>
-              <span class="changelog-date">29 ก.ย. 2026</span>
-            </div>
-            <ul class="changelog-list">
-              <li><strong>Universal Auto-Resampling:</strong> ปลดล็อกให้รองรับภาพสกินที่มีขนาดพิกเซลอิสระ (เช่น 1452x1452, 1254x1254, 800x800) โดยย่อและจัดตำแหน่ง UV สู่ 64x64 มาตรฐาน Minecraft Bedrock อัตโนมัติ</li>
-              <li><strong>Full JPG/JPEG Conversion:</strong> รองรับภาพ .jpg และแปลงเป็น .png แท้ 100% ผ่าน Canvas ป้องกันปัญหาไฟล์สกินชำรุดในเกม</li>
-              <li><strong>Real-time Notification Toasts:</strong> เพิ่มระบบแจ้งเตือน Toast ครบทุกกรณี ทั้งแจ้งเมื่อปรับขนาดภาพสำเร็จ และแจ้งเตือนข้อผิดพลาดชัดเจน</li>
-              <li><strong>Official Skin Pack (.mcpack):</strong> ยกเครื่องระบบตู้เสื้อผ้าเป็น Skin Pack มาตรฐาน นำเข้าห้องแต่งตัว Dressing Room ได้โดยตรง</li>
-              <li><strong>Clean File Extensions:</strong> แก้ปัญหานามสกุลไฟล์ซ้ำซ้อน .mcaddon.zip / .mcpack.zip ให้ดาวน์โหลดเป็น .mcaddon และ .mcpack ล้วนสะอาด 100%</li>
-              <li><strong>Vercel CI/CD Stabilization:</strong> ป้องกัน Build Error บนกิ่ง gh-pages ด้วยคำสั่ง ignoreCommand ข้ามการ Build กิ่งสำเร็จรูป</li>
-            </ul>
-
-            <div class="changelog-header" style="margin-top: 1rem;">
-              <div class="changelog-ver">
-                <span class="changelog-ver-title">ZIRCONX STUDIO</span>
-                <span class="changelog-badge" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border-color: rgba(148, 163, 184, 0.35);">v1.1.0</span>
-              </div>
-              <span class="changelog-date">14 ก.ย. 2026</span>
-            </div>
-            <ul class="changelog-list">
-              <li><strong>Pure Client-Side 100%:</strong> ประมวลผลบนเบราว์เซอร์ทั้งหมดผ่าน In-Memory JSZip ปลอดภัย ไม่พึ่งพา Server</li>
-              <li><strong>Dual-Model Engine:</strong> สลับโมเดล Steve (แขน 4px) และ Alex (แขน 3px) แบบเรียลไทม์</li>
-              <li><strong>Bedrock 1.21.10+ Standard:</strong> อัปเดต Custom Render Controller รองรับปอยผมและวิกยาว</li>
-              <li><strong>Zero-Dependency SFX:</strong> เสียงเอฟเฟกต์สังเคราะห์ในตัวผ่าน Web Audio API</li>
-            </ul>
           </div>
 
           <!-- 6. Developer Credit -->
