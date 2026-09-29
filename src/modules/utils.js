@@ -4,7 +4,8 @@
 import {
   validateSkinDimensions,
   convert64x32To64x64,
-  detectSkinModelFromPixels
+  detectSkinModelFromPixels,
+  applySmartAlphaInferToCanvas
 } from '../core/skin/skinProcessor.js';
 import { AppError } from '../core/errors/AppError.js';
 import { saveAs } from 'file-saver';
@@ -52,54 +53,69 @@ export function showToast(message, type = "info") {
 /**
  * Process skin resolution: supports standard and HD skins (512, 1024, 2048, 4096)
  * Preserves original resolution and converts legacy 64x32 skins to 64x64 with complete UV mirroring.
+ * Also automatically inspects and fixes solid outer background artifacts (Smart Alpha Inferrer).
+ * @param {HTMLImageElement|Image} img
+ * @param {Object} [options]
  */
-export function processSkinResolution(img) {
+export function processSkinResolution(img, options = {}) {
   return new Promise((resolve, reject) => {
     try {
       const dim = validateSkinDimensions(img.width, img.height);
+      const autoInferAlpha = options.autoInferAlpha !== false;
+
+      let workCanvas;
+      let wasResized = false;
+      const origW = img.width;
+      const origH = img.height;
 
       if (dim.isLegacy) {
-        const upgradedCanvas = convert64x32To64x64(img);
-        const upgraded = new Image();
-        upgraded.onload = () => {
-          upgraded._wasResized = true;
-          upgraded._origW = img.width;
-          upgraded._origH = img.height;
-          resolve(upgraded);
-        };
-        upgraded.onerror = () => reject(new Error("ไม่สามารถประมวลผลไฟล์สกินได้"));
-        upgraded.src = upgradedCanvas.toDataURL("image/png");
-        return;
-      }
-
-      if (dim.needsResize) {
-        const resizeCanvas = document.createElement("canvas");
-        resizeCanvas.width = dim.targetResolution;
-        resizeCanvas.height = dim.targetResolution;
-        const rCtx = resizeCanvas.getContext("2d");
-        if (!rCtx) {
-          throw new Error("Canvas context unavailable");
-        }
+        workCanvas = convert64x32To64x64(img);
+        wasResized = true;
+      } else if (dim.needsResize) {
+        workCanvas = document.createElement("canvas");
+        workCanvas.width = dim.targetResolution;
+        workCanvas.height = dim.targetResolution;
+        const rCtx = workCanvas.getContext("2d");
+        if (!rCtx) throw new Error("Canvas context unavailable");
         rCtx.imageSmoothingEnabled = false;
         rCtx.drawImage(img, 0, 0, dim.targetResolution, dim.targetResolution);
+        wasResized = true;
+      } else {
+        workCanvas = document.createElement("canvas");
+        workCanvas.width = img.width;
+        workCanvas.height = img.height;
+        const nCtx = workCanvas.getContext("2d");
+        if (!nCtx) throw new Error("Canvas context unavailable");
+        nCtx.imageSmoothingEnabled = false;
+        nCtx.drawImage(img, 0, 0);
+      }
 
-        const resized = new Image();
-        resized.onload = () => {
-          resized._wasResized = true;
-          resized._origW = img.width;
-          resized._origH = img.height;
-          resolve(resized);
-        };
-        resized.onerror = () => reject(new Error("ไม่สามารถปรับขนาดภาพสกินได้"));
-        resized.src = resizeCanvas.toDataURL("image/png");
+      let alphaResult = { modified: false, clearedPixels: 0, bgColor: null };
+      if (autoInferAlpha) {
+        alphaResult = applySmartAlphaInferToCanvas(workCanvas, options);
+      }
+
+      if (!wasResized && !alphaResult.modified) {
+        img._wasResized = false;
+        img._origW = origW;
+        img._origH = origH;
+        img._wasAlphaInferred = false;
+        resolve(img);
         return;
       }
 
-      // Preserve native resolution directly
-      img._wasResized = false;
-      img._origW = img.width;
-      img._origH = img.height;
-      resolve(img);
+      const outImg = new Image();
+      outImg.onload = () => {
+        outImg._wasResized = wasResized;
+        outImg._origW = origW;
+        outImg._origH = origH;
+        outImg._wasAlphaInferred = alphaResult.modified;
+        outImg._clearedPixels = alphaResult.clearedPixels;
+        outImg._inferredBgColor = alphaResult.bgColor;
+        resolve(outImg);
+      };
+      outImg.onerror = () => reject(new Error("ไม่สามารถสร้างภาพสกินผลลัพธ์ได้"));
+      outImg.src = workCanvas.toDataURL("image/png");
     } catch (err) {
       reject(err instanceof AppError ? new Error(err.userMessage) : err);
     }

@@ -196,6 +196,9 @@ export class WardrobeMultiEditor {
         if (processedImg._wasResized) {
           showToast(`ปรับขนาด ${file.name} (${processedImg._origW}x${processedImg._origH} → ${processedImg.width}x${processedImg.height}) อัตโนมัติ`, 'info');
         }
+        if (processedImg._wasAlphaInferred) {
+          showToast(`ลบพื้นหลังทึบของ ${file.name} ให้ตรงปกอัตโนมัติ ✨`, 'success');
+        }
       } catch (err) {
         console.warn(`Failed to process skin file ${file.name}:`, err);
         errors.push(`${file.name}: ${err.message || 'ประมวลผลล้มเหลว'}`);

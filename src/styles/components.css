@@ -591,4 +591,37 @@
   color: #ffffff;
 }
 
+/* ==========================================================================
+   SMART AUTO-FIX BADGE BUTTON
+   ========================================================================== */
+.autofix-badge-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.6rem;
+  background: rgba(16, 185, 129, 0.16);
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  border-radius: var(--r-xs);
+  color: #34d399;
+  font-family: var(--font-pixel), var(--font-mono), sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.autofix-badge-btn:hover {
+  background: rgba(16, 185, 129, 0.28);
+  border-color: #34d399;
+  transform: translateY(-1px);
+}
+
+.autofix-badge-btn.disabled {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #94a3b8;
+}
+
+
 

@@ -26,6 +26,9 @@ export class HidePartEditor {
     };
 
     this.viewer = null;
+    this.rawInputImg = null;
+    this.autofixEnabled = true;
+    this.isAlphaInferred = false;
     this.init();
   }
 
@@ -125,7 +128,21 @@ export class HidePartEditor {
       });
     }
 
-    // 8. Download Skin PNG
+    // 8. Autofix Toggle (Smart Alpha Inferrer)
+    const autofixBtn = document.getElementById('hidepart-autofix-btn');
+    if (autofixBtn) {
+      autofixBtn.addEventListener('click', async () => {
+        if (!this.rawInputImg) return;
+        this.autofixEnabled = !this.autofixEnabled;
+        autofixBtn.classList.toggle('disabled', !this.autofixEnabled);
+        const text = autofixBtn.querySelector('.autofix-text');
+        if (text) text.textContent = this.autofixEnabled ? 'ซ่อมกล่องดำ: เปิด' : 'กล่องดำ: สกินเดิม';
+        showToast(this.autofixEnabled ? 'เปิดระบบซ่อมกล่องดำเลเยอร์นอก' : 'ปิดระบบซ่อม: แสดงภาพต้นฉบับ', 'info');
+        await this.loadSkinFromImage(this.rawInputImg, '', { autoInferAlpha: this.autofixEnabled });
+      });
+    }
+
+    // 9. Download Skin PNG
     const downloadPngBtn = document.getElementById('hidepart-download-png-btn');
     if (downloadPngBtn) {
       downloadPngBtn.addEventListener('click', () => this.downloadSkinPng());
@@ -254,11 +271,14 @@ export class HidePartEditor {
     }
   }
 
-  async loadSkinFromImage(rawImg, displayName = '') {
+  async loadSkinFromImage(rawImg, displayName = '', options = {}) {
     try {
-      const processedImg = await processSkinResolution(rawImg);
+      this.rawInputImg = rawImg;
+      const autoInfer = options.autoInferAlpha !== undefined ? options.autoInferAlpha : this.autofixEnabled;
+      const processedImg = await processSkinResolution(rawImg, { autoInferAlpha: autoInfer });
       this.originalImg = processedImg;
       this.resolution = processedImg.width;
+      this.isAlphaInferred = !!processedImg._wasAlphaInferred;
 
       this.canvas.width = this.resolution;
       this.canvas.height = this.resolution;
@@ -268,6 +288,19 @@ export class HidePartEditor {
       if (resBadge) {
         resBadge.textContent = this.resolution > 64 ? `${this.resolution}x${this.resolution} HD` : '64x64 Standard';
         resBadge.style.display = 'inline-flex';
+      }
+
+      // Update autofix badge button in DOM
+      const autofixBtn = document.getElementById('hidepart-autofix-btn');
+      if (autofixBtn) {
+        if (this.isAlphaInferred || !autoInfer) {
+          autofixBtn.style.display = 'inline-flex';
+          autofixBtn.classList.toggle('disabled', !this.autofixEnabled);
+          const text = autofixBtn.querySelector('.autofix-text');
+          if (text) text.textContent = this.autofixEnabled ? 'ซ่อมกล่องดำ: เปิด' : 'กล่องดำ: สกินเดิม';
+        } else {
+          autofixBtn.style.display = 'none';
+        }
       }
 
       // Auto-detect Alex (slim 3px) vs Steve (default 4px)
@@ -302,6 +335,9 @@ export class HidePartEditor {
       sfx.playPop();
       if (processedImg._wasResized) {
         showToast(`ปรับขนาดสกินจาก ${processedImg._origW}x${processedImg._origH} เป็น ${this.resolution}x${this.resolution} อัตโนมัติ`, 'info');
+      }
+      if (processedImg._wasAlphaInferred) {
+        showToast('ตรวจพบสกินพื้นหลังทึบ: ลบกล่องดำเลเยอร์นอกให้ตรงปกอัตโนมัติ ✨', 'success');
       }
       showToast(displayName ? `โหลดสกิน ${displayName} เรียบร้อย` : 'อัปโหลดสกินเรียบร้อย', 'success');
     } catch (err) {

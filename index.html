@@ -436,9 +436,15 @@
         <!-- Work Area -->
         <div id="hidepart-workarea" style="display: none;">
           <!-- 3D Preview Top Heading -->
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.4rem;">
             <span style="font-family: var(--font-mono); font-size: 0.88rem; font-weight: 800; color: #ffffff;">โมเดล 3D REALTIME</span>
-            <span id="hidepart-res-badge" class="res-badge" style="display: none;">64x64</span>
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+              <button id="hidepart-autofix-btn" type="button" class="autofix-badge-btn" style="display: none;" title="คลิกเพื่อสลับ: ล้างกล่องดำเลเยอร์นอก / แสดงสกินเดิม">
+                <span class="autofix-icon">✨</span>
+                <span class="autofix-text">ซ่อมกล่องดำ: เปิด</span>
+              </button>
+              <span id="hidepart-res-badge" class="res-badge" style="display: none;">64x64</span>
+            </div>
           </div>
 
           <!-- 3D Preview -->
@@ -548,9 +554,15 @@
         <!-- Work Area -->
         <div id="standalone-skin-workarea" style="display: none;">
           <!-- 3D Preview Top Heading -->
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.4rem;">
             <span style="font-family: var(--font-mono); font-size: 0.88rem; font-weight: 800; color: #ffffff;">โมเดล 3D REALTIME</span>
-            <span id="standalone-res-badge" class="res-badge" style="display: none;">64x64</span>
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+              <button id="standalone-autofix-btn" type="button" class="autofix-badge-btn" style="display: none;" title="คลิกเพื่อสลับ: ล้างกล่องดำเลเยอร์นอก / แสดงสกินเดิม">
+                <span class="autofix-icon">✨</span>
+                <span class="autofix-text">ซ่อมกล่องดำ: เปิด</span>
+              </button>
+              <span id="standalone-res-badge" class="res-badge" style="display: none;">64x64</span>
+            </div>
           </div>
 
           <!-- 3D Preview -->
@@ -866,7 +878,20 @@
               <div class="changelog-header">
                 <div class="changelog-ver">
                   <span class="changelog-ver-title">ZIRCONX STUDIO</span>
-                  <span class="changelog-badge">v1.2.0 ล่าสุด</span>
+                  <span class="changelog-badge">v1.3.0 ล่าสุด</span>
+                </div>
+                <span class="changelog-date">29 ก.ย. 2026</span>
+              </div>
+              <ul class="changelog-list">
+                <li><strong>Smart Alpha Inferrer (แก้สกินไม่ตรงปก):</strong> ตรวจจับสกินพื้นหลังทึบ (จากไฟล์ JPG หรือภาพแคป) และลบกล่องดำเลเยอร์นอก (หมวก, เสื้อ, กางเกง) ให้โปร่งใส โดยคงเลเยอร์ในไว้ครบถ้วน ตัวละครไม่โบ๋ หน้าตาตรงปก 100%</li>
+                <li><strong>Interactive Auto-Fix Toggle:</strong> เพิ่มปุ่มสลับ "ซ่อมกล่องดำ: เปิด/ปิด" บนแถบควบคุม 3D Realtime ให้ผู้ใช้เลือกแสดงผลสกินเดิมหรือสกินที่ซ่อมแซมได้ทันที</li>
+                <li><strong>Dominant Cluster Sampling:</strong> อัลกอริทึมสุ่มตรวจจับสีพื้นหลังแบบกลุ่มสีหลัก (Cluster) ทนทานต่อภาพที่มีแสงเงา แสงออร่า หรือสัญญาณรบกวนจากการบีบอัดไฟล์</li>
+              </ul>
+
+              <div class="changelog-header" style="margin-top: 1rem;">
+                <div class="changelog-ver">
+                  <span class="changelog-ver-title">ZIRCONX STUDIO</span>
+                  <span class="changelog-badge" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border-color: rgba(148, 163, 184, 0.35);">v1.2.0</span>
                 </div>
                 <span class="changelog-date">29 ก.ย. 2026</span>
               </div>
