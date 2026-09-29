@@ -7,6 +7,7 @@ import { createSkinPack } from '../core/wardrobe/wardrobeGenerator.js';
 import { parseSkinPackArchive } from '../core/wardrobe/wardrobeParser.js';
 import { validateAddonPackage } from '../core/validator/addonValidator.js';
 import { sfx } from './sfx.js';
+import * as skinview3d from 'skinview3d';
 
 /**
  * Extract 16x16 pixel face avatar from skin image for UI preview
