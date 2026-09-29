@@ -25,7 +25,7 @@ export const COSMETIC_PRESETS = {
   dragon_wings: {
     id: 'dragon_wings',
     name: 'ปีกมังกร',
-    icon: '🪽',
+    icon: '🐉',
     bone: 'body',
     recommendedSlot: 'suit',
     defaultColor: '#8b0000'

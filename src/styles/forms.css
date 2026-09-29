@@ -359,9 +359,13 @@
 }
 
 .cosmetic-card-icon {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
   font-size: 1.4rem;
   line-height: 1;
   margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
