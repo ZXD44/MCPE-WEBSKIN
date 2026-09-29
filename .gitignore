@@ -6,3 +6,7 @@ dist/
 customer_samples/
 desktop.ini
 *.log
+
+# Explicitly track and protect agent rules & documentation
+!.agents/
+!.agents/**
