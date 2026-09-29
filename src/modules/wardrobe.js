@@ -2,7 +2,7 @@
  * Minecraft Bedrock Skin Pack Generator (.mcpack)
  * Pure Client-Side Generator for Minecraft Bedrock Dressing Room / Classic Skins
  */
-import { generateRandomId, showToast, downloadMcpackFile, processSkinResolution, detectSlimModel } from './utils.js';
+import { generateRandomId, showToast, downloadMcpackFile, processSkinResolution, detectSlimModel, convertImageToPngBlob } from './utils.js';
 import { createSkinPack } from '../core/wardrobe/wardrobeGenerator.js';
 import { parseSkinPackArchive } from '../core/wardrobe/wardrobeParser.js';
 import { validateAddonPackage } from '../core/validator/addonValidator.js';
@@ -136,14 +136,17 @@ export class WardrobeMultiEditor {
       return;
     }
 
-    const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png') || f.type.includes('image'));
-    if (pngFiles.length === 0) {
-      showToast('กรุณาเลือกไฟล์ภาพสกิน (.png)', 'error');
+    const imageFiles = files.filter(f => {
+      const n = f.name.toLowerCase();
+      return n.endsWith('.png') || n.endsWith('.jpg') || n.endsWith('.jpeg') || f.type.startsWith('image/');
+    });
+    if (imageFiles.length === 0) {
+      showToast('กรุณาเลือกไฟล์ภาพสกิน (.png, .jpg)', 'error');
       return;
     }
 
     let loaded = 0;
-    for (const file of pngFiles) {
+    for (const file of imageFiles) {
       try {
         const reader = new FileReader();
         const readPromise = new Promise((resolve, reject) => {
@@ -164,6 +167,10 @@ export class WardrobeMultiEditor {
         const isSlim = detectSlimModel(processedImg);
         const facePreviewUrl = extractFaceDataUrl(processedImg);
 
+        // Convert any input image (PNG, JPG, WebP) to genuine PNG Blob
+        const pngBlob = await convertImageToPngBlob(processedImg);
+        const pngUrl = URL.createObjectURL(pngBlob);
+
         const cleanName = file.name
           .replace(/\.[^/.]+$/, '')
           .replace(/[_\-]+/g, ' ')
@@ -179,8 +186,8 @@ export class WardrobeMultiEditor {
           name: cleanName || `ชุดที่ ${this.skins.length + 1}`,
           model: isSlim ? 'alex' : 'steve',
           faceUrl: facePreviewUrl,
-          skinURL: dataUrl,
-          blob: file
+          skinURL: pngUrl,
+          blob: pngBlob
         });
 
         loaded++;

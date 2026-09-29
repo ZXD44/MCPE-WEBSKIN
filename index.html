@@ -428,9 +428,9 @@
             </svg>
           </div>
           <div class="dropzone-text">เลือกหรือวางไฟล์สกิน</div>
-          <div class="dropzone-sub">PNG / ZIP / MCPACK • ลากไฟล์หรือกด Ctrl+V</div>
+          <div class="dropzone-sub">PNG / JPG / ZIP / MCPACK • ลากไฟล์หรือกด Ctrl+V</div>
         </div>
-        <input type="file" id="hidepart-file-input" accept="image/png,.png,.zip,.mcpack,.mcaddon"
+        <input type="file" id="hidepart-file-input" accept="image/png,image/jpeg,.png,.jpg,.jpeg,.zip,.mcpack,.mcaddon"
           style="display: none;">
 
         <!-- Work Area -->
@@ -540,9 +540,9 @@
             </svg>
           </div>
           <div class="dropzone-text">เลือกหรือวางไฟล์สกิน</div>
-          <div class="dropzone-sub">PNG / ZIP / MCPACK • ลากไฟล์หรือกด Ctrl+V</div>
+          <div class="dropzone-sub">PNG / JPG / ZIP / MCPACK • ลากไฟล์หรือกด Ctrl+V</div>
         </div>
-        <input type="file" id="standalone-skin-input" accept="image/png,.png,.zip,.mcpack,.mcaddon"
+        <input type="file" id="standalone-skin-input" accept="image/png,image/jpeg,.png,.jpg,.jpeg,.zip,.mcpack,.mcaddon"
           style="display: none;">
 
         <!-- Work Area -->
@@ -656,7 +656,7 @@
             <input type="number" id="standalone-v-minor" value="0">
             <input type="number" id="standalone-v-patch" value="0">
             <img id="standalone-icon-preview">
-            <input type="file" id="standalone-icon-input" accept="image/png">
+            <input type="file" id="standalone-icon-input" accept="image/png,image/jpeg,.png,.jpg,.jpeg">
             <div id="standalone-icon-dropzone"></div>
             <button id="standalone-remove-icon-btn"></button>
           </div>
@@ -698,16 +698,16 @@
               <circle cx="16" cy="12" r="1" />
             </svg>
           </div>
-          <div class="dropzone-text">เลือกหรือลากไฟล์ภาพสกิน (.png) หลายๆ ไฟล์</div>
+          <div class="dropzone-text">เลือกหรือลากไฟล์ภาพสกิน (.png, .jpg) หลายๆ ไฟล์</div>
           <div class="dropzone-sub">อัปโหลดพร้อมกันได้ไม่จำกัด • หรือลากไฟล์ .mcpack เพื่อแก้ไข</div>
         </div>
-        <input type="file" id="wardrobe-add-outfit-input" accept="image/png,.png" multiple style="display: none;">
+        <input type="file" id="wardrobe-add-outfit-input" accept="image/png,image/jpeg,.png,.jpg,.jpeg" multiple style="display: none;">
         <input type="file" id="wardrobe-import-input" accept=".mcpack,.zip,.mcaddon" style="display: none;">
 
         <!-- Action Buttons -->
         <div style="display: flex; gap: 0.5rem; margin-bottom: 1.15rem;">
           <button onclick="document.getElementById('wardrobe-add-outfit-input').click()" class="mc-btn mc-btn-primary" style="flex: 2;">
-            + เพิ่มสกิน (PNG)
+            + เพิ่มสกิน (PNG / JPG)
           </button>
           <button onclick="document.getElementById('wardrobe-import-input').click()" class="mc-btn mc-btn-dark" style="flex: 1.2;">
             นำเข้า .mcpack
@@ -725,7 +725,7 @@
 
         <!-- Empty State -->
         <div id="wardrobe-empty-state" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); background: var(--bg-surface); border: 1px dashed var(--mc-border-mid); border-radius: var(--r-sm); margin-bottom: 1.25rem;">
-          ยังไม่มีสกินในแพ็ก กดปุ่ม <b>"+ เพิ่มสกิน (PNG)"</b> หรือลากไฟล์ภาพมาวางเพื่อเริ่มต้น
+          ยังไม่มีสกินในแพ็ก กดปุ่ม <b>"+ เพิ่มสกิน (PNG / JPG)"</b> หรือลากไฟล์ภาพมาวางเพื่อเริ่มต้น
         </div>
 
         <!-- Outfit Cards Grid -->

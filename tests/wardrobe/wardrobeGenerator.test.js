@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import JSZip from 'jszip';
 import { createSkinPack } from '../../src/core/wardrobe/wardrobeGenerator.js';
 import { validateAddonPackage } from '../../src/core/validator/addonValidator.js';
 import { parseSkinPackArchive } from '../../src/core/wardrobe/wardrobeParser.js';
@@ -113,5 +114,43 @@ describe('Minecraft Bedrock Skin Pack Generator (.mcpack) & Parser Module', () =
     expect(parsed.skins[0].model).toBe('steve');
     expect(parsed.skins[1].name).toBe('Stealth Ninja');
     expect(parsed.skins[1].model).toBe('alex');
+  });
+
+  it('parses skin packs with .jpg or .jpeg texture references smoothly', async () => {
+    const testZip = new JSZip();
+
+    const manifestJson = {
+      format_version: 2,
+      header: {
+        name: 'JPG Skin Pack',
+        description: 'Test pack with jpg',
+        version: [1, 0, 0],
+        uuid: '12345678-1234-4234-8234-123456789012'
+      },
+      modules: [{ type: 'skin_pack', uuid: '87654321-4321-4321-8321-210987654321', version: [1, 0, 0] }]
+    };
+    testZip.file('manifest.json', JSON.stringify(manifestJson));
+
+    const skinsJson = {
+      serialize_name: 'jpg_pack',
+      localization_name: 'jpg_pack',
+      skins: [
+        {
+          localization_name: 'samurai',
+          geometry: 'geometry.humanoid.custom',
+          texture: 'samurai.jpg',
+          type: 'free'
+        }
+      ]
+    };
+    testZip.file('skins.json', JSON.stringify(skinsJson));
+    testZip.file('samurai.jpg', 'dummy-jpg-bytes');
+
+    const zipBuffer = await testZip.generateAsync({ type: 'nodebuffer' });
+    const parsed = await parseSkinPackArchive(zipBuffer);
+
+    expect(parsed.packName).toBe('JPG Skin Pack');
+    expect(parsed.skins).toHaveLength(1);
+    expect(parsed.skins[0].id).toBe('samurai');
   });
 });

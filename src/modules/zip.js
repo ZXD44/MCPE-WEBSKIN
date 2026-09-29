@@ -33,40 +33,39 @@ export async function extractSkinFromArchive(file) {
     }
   }
 
-  // 2. Scan for PNG files inside the archive
-  const pngFiles = zip.file(/\.png$/i);
-  if (pngFiles.length === 0) {
+  // 2. Scan for PNG and JPG files inside the archive
+  const imageFiles = zip.file(/\.(png|jpe?g)$/i);
+  if (imageFiles.length === 0) {
     throw new AppError(ErrorCode.IMPORT_NO_SKIN_FOUND);
   }
 
   // Prioritize typical Minecraft skin paths
   const priorityPatterns = [
-    /textures\/entity\/.*skin.*\.png$/i,
-    /textures\/entity\/.*steve.*\.png$/i,
-    /textures\/entity\/.*alex.*\.png$/i,
-    /.*skin.*\.png$/i,
-    /textures\/items\/.*\.png$/i
+    /textures\/entity\/.*skin.*\.(png|jpe?g)$/i,
+    /textures\/entity\/.*steve.*\.(png|jpe?g)$/i,
+    /textures\/entity\/.*alex.*\.(png|jpe?g)$/i,
+    /.*skin.*\.(png|jpe?g)$/i,
+    /textures\/items\/.*\.(png|jpe?g)$/i
   ];
 
   let selectedFile = null;
   for (const pattern of priorityPatterns) {
-    selectedFile = pngFiles.find(f => pattern.test(f.name));
+    selectedFile = imageFiles.find(f => pattern.test(f.name));
     if (selectedFile) break;
   }
 
   // Fallback to first valid candidate
   if (!selectedFile) {
-    selectedFile = pngFiles[0];
+    selectedFile = imageFiles[0];
   }
 
-  skinFileName = selectedFile.name.split('/').pop().replace(/\.png$/i, '');
+  skinFileName = selectedFile.name.split('/').pop().replace(/\.(png|jpe?g)$/i, '');
   const rawBlob = await selectedFile.async('blob');
-  skinBlob = new Blob([rawBlob], { type: 'image/png' });
 
   // Validate that it's a valid image
   const skinImg = await new Promise((resolve, reject) => {
     const img = new Image();
-    const url = URL.createObjectURL(skinBlob);
+    const url = URL.createObjectURL(rawBlob);
     img.onload = () => {
       URL.revokeObjectURL(url);
       resolve(img);
@@ -77,6 +76,14 @@ export async function extractSkinFromArchive(file) {
     };
     img.src = url;
   });
+
+  // Convert to pure PNG Blob via Canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = skinImg.width;
+  canvas.height = skinImg.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(skinImg, 0, 0);
+  skinBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
 
   return {
     blob: skinBlob,

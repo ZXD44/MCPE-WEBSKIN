@@ -71,7 +71,7 @@ export async function parseSkinPackArchive(fileOrBuffer) {
           const cleanTexture = rawTexture.split('/').pop().replace(/\.png$/i, '');
 
           // Find texture file in archive
-          const textureFile = content.file(new RegExp(`(^|/)${cleanTexture}\\.png$`, 'i'))[0] ||
+          const textureFile = content.file(new RegExp(`(^|/)${cleanTexture}\\.(png|jpe?g)$`, 'i'))[0] ||
                               content.file(new RegExp(`${rawTexture}$`, 'i'))[0];
 
           let blob = null;
@@ -104,10 +104,10 @@ export async function parseSkinPackArchive(fileOrBuffer) {
     }
   } else {
     // Fallback: Check if it's a zip with skin textures
-    const skinFiles = content.file(/\.png$/i).filter(f => !f.name.includes('pack_icon'));
+    const skinFiles = content.file(/\.(png|jpe?g)$/i).filter(f => !f.name.includes('pack_icon'));
     for (let i = 0; i < skinFiles.length; i++) {
       const sf = skinFiles[i];
-      const filename = sf.name.split('/').pop().replace(/\.png$/i, '');
+      const filename = sf.name.split('/').pop().replace(/\.(png|jpe?g)$/i, '');
       const blob = new Blob([await sf.async('arraybuffer')], { type: 'image/png' });
       const url = typeof URL !== 'undefined' && URL.createObjectURL ? URL.createObjectURL(blob) : '';
       skins.push({
