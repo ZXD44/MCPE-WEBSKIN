@@ -1,0 +1,19 @@
+{
+  "name": "ZirconX Skin Studio — Minecraft Bedrock",
+  "short_name": "ZirconX Studio",
+  "description": "เครื่องมือสร้างและจัดการสกิน Minecraft Bedrock Edition (สกินล่องหน, แอดออนสกินสวมใส่, สกินแพ็กตู้เสื้อผ้า)",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0c0d12",
+  "theme_color": "#0c0d12",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./templates/packicon.png",
+      "sizes": "128x128 256x256 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
