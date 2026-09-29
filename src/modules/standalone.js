@@ -273,7 +273,36 @@ export class StandaloneAddonGenerator {
     // Blockbench .geo.json Upload
     const bbGeoInput = document.getElementById('blockbench-geo-input');
     if (bbGeoInput) {
-      bbGeoInput.addEventListener('change', (e) => this.handleBlockbenchUpload(e));
+      bbGeoInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          this.processBlockbenchFile(e.target.files[0]);
+        }
+      });
+    }
+
+    // Blockbench Dropzone Drag & Drop
+    const bbDropzone = document.getElementById('blockbench-dropzone');
+    if (bbDropzone) {
+      ['dragenter', 'dragover'].forEach(eventName => {
+        bbDropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          bbDropzone.classList.add('drag-over');
+        });
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        bbDropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          bbDropzone.classList.remove('drag-over');
+        });
+      });
+      bbDropzone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer?.files;
+        if (files && files.length > 0) {
+          this.processBlockbenchFile(files[0]);
+        }
+      });
     }
 
     // Blockbench Remove button
@@ -312,8 +341,7 @@ export class StandaloneAddonGenerator {
     }
   }
 
-  handleBlockbenchUpload(e) {
-    const file = e.target.files[0];
+  processBlockbenchFile(file) {
     if (!file) return;
 
     const reader = new FileReader();
@@ -414,6 +442,20 @@ export class StandaloneAddonGenerator {
 
   async loadFile(file) {
     try {
+      if (file.name && (file.name.endsWith('.geo.json') || (file.name.endsWith('.json') && !file.name.endsWith('manifest.json')))) {
+        this.selectedCosmetic = 'custom';
+        document.querySelectorAll('.cosmetic-card').forEach(b => {
+          b.classList.toggle('active', b.dataset.cosmetic === 'custom');
+        });
+        const optionsPanel = document.getElementById('cosmetic-options-panel');
+        const blockbenchPanel = document.getElementById('blockbench-upload-panel');
+        if (optionsPanel) optionsPanel.style.display = 'none';
+        if (blockbenchPanel) blockbenchPanel.style.display = 'block';
+
+        this.processBlockbenchFile(file);
+        return;
+      }
+
       if (await isZipArchive(file)) {
         showToast('กำลังแตกไฟล์ ZIP / แอดออน...', 'info');
         const extracted = await extractSkinFromArchive(file);
