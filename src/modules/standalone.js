@@ -9,6 +9,14 @@ import { createStandaloneSkinAddon } from '../core/addon/addonGenerator.js';
 import { validateAddonPackage } from '../core/validator/addonValidator.js';
 import { getPartUVRectangles, applyPartClippingToContext } from '../core/skin/skinProcessor.js';
 import { createHeadIconBlob, createSuitIconBlob, generateSlotItemIconDataUrl, generateSlotItemIconBlob } from '../core/skin/iconGenerator.js';
+import {
+  COSMETIC_PRESETS,
+  generateBedrockCosmeticGeometry,
+  parseBlockbenchGeoJson,
+  attachCosmeticToViewer,
+  removeCosmeticFromViewer,
+  sampleSkinColor
+} from '../core/cosmetics/cosmeticsManager.js';
 import * as skinview3d from 'skinview3d';
 
 export class StandaloneAddonGenerator {
@@ -26,6 +34,11 @@ export class StandaloneAddonGenerator {
 
     this.modelType = 1; // 1: Steve, 2: Alex, 3: Custom Geometry
     this.customGeometryJson = null;
+
+    // 3D Cosmetics & Blockbench
+    this.selectedCosmetic = 'none';
+    this.cosmeticColor = 'auto';
+    this.customBlockbenchJson = null;
 
     this.itemSlotType = 'head'; // 'head', 'suit', 'legs', 'feet', 'both'
 
@@ -186,6 +199,7 @@ export class StandaloneAddonGenerator {
 
         if (this.viewer) {
           this.viewer.playerObject.skin.modelType = this.modelType === 2 ? 'slim' : 'default';
+          this.updateCosmeticPreview();
         }
       });
     });
@@ -209,6 +223,74 @@ export class StandaloneAddonGenerator {
       customGeoInput.addEventListener('change', (e) => this.handleCustomGeometryUpload(e));
     }
 
+    // 3D Cosmetics selector buttons
+    document.querySelectorAll('.cosmetic-card').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.cosmetic-card').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.selectedCosmetic = btn.dataset.cosmetic || 'none';
+        sfx.playClick();
+
+        const optionsPanel = document.getElementById('cosmetic-options-panel');
+        const blockbenchPanel = document.getElementById('blockbench-upload-panel');
+
+        if (this.selectedCosmetic === 'custom') {
+          if (optionsPanel) optionsPanel.style.display = 'none';
+          if (blockbenchPanel) blockbenchPanel.style.display = 'block';
+        } else if (this.selectedCosmetic === 'none') {
+          if (optionsPanel) optionsPanel.style.display = 'none';
+          if (blockbenchPanel) blockbenchPanel.style.display = 'none';
+        } else {
+          if (optionsPanel) optionsPanel.style.display = 'flex';
+          if (blockbenchPanel) blockbenchPanel.style.display = 'none';
+        }
+
+        this.updateCosmeticPreview();
+      });
+    });
+
+    // Cosmetic Color Swatches
+    document.querySelectorAll('.cosmetic-color-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.cosmetic-color-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.cosmeticColor = btn.dataset.color || 'auto';
+        sfx.playClick();
+        this.updateCosmeticPreview();
+      });
+    });
+
+    // Custom Color Input
+    const colorPicker = document.getElementById('cosmetic-custom-color');
+    if (colorPicker) {
+      colorPicker.addEventListener('input', (e) => {
+        document.querySelectorAll('.cosmetic-color-btn').forEach(b => b.classList.remove('active'));
+        this.cosmeticColor = e.target.value;
+        this.updateCosmeticPreview();
+      });
+    }
+
+    // Blockbench .geo.json Upload
+    const bbGeoInput = document.getElementById('blockbench-geo-input');
+    if (bbGeoInput) {
+      bbGeoInput.addEventListener('change', (e) => this.handleBlockbenchUpload(e));
+    }
+
+    // Blockbench Remove button
+    const bbRemoveBtn = document.getElementById('blockbench-remove-btn');
+    if (bbRemoveBtn) {
+      bbRemoveBtn.addEventListener('click', () => {
+        this.customBlockbenchJson = null;
+        const infoEl = document.getElementById('blockbench-file-info');
+        const dropEl = document.getElementById('blockbench-dropzone');
+        if (infoEl) infoEl.style.display = 'none';
+        if (dropEl) dropEl.style.display = 'block';
+        sfx.playPop();
+        showToast('ลบโมเดล Blockbench เรียบร้อย', 'info');
+        this.updateCosmeticPreview();
+      });
+    }
+
     // Autofix Toggle (Smart Alpha Inferrer)
     const autofixBtn = document.getElementById('standalone-autofix-btn');
     if (autofixBtn) {
@@ -228,6 +310,50 @@ export class StandaloneAddonGenerator {
     if (downloadBtn) {
       downloadBtn.addEventListener('click', () => this.generateAddon());
     }
+  }
+
+  handleBlockbenchUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = parseBlockbenchGeoJson(event.target.result);
+        this.customBlockbenchJson = parsed.json;
+
+        const infoCard = document.getElementById('blockbench-file-info');
+        const dropzone = document.getElementById('blockbench-dropzone');
+        const nameEl = document.getElementById('blockbench-model-name');
+        const metaEl = document.getElementById('blockbench-model-meta');
+
+        if (nameEl) nameEl.textContent = parsed.identifier;
+        if (metaEl) metaEl.textContent = `${parsed.bonesCount} กระดูก • ${parsed.cubeCount} กล่อง 3D`;
+        if (infoCard) infoCard.style.display = 'flex';
+        if (dropzone) dropzone.style.display = 'none';
+
+        this.updateCosmeticPreview();
+        sfx.playLevelUp();
+        showToast(`นำเข้าโมเดล ${parsed.identifier} สำเร็จ (${parsed.cubeCount} กล่อง)`, 'success');
+      } catch (err) {
+        showToast(err.message || 'ไฟล์ Blockbench ไม่ถูกต้อง', 'error');
+        this.customBlockbenchJson = null;
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  updateCosmeticPreview() {
+    if (!this.viewer) return;
+    let color = this.cosmeticColor;
+    if (color === 'auto') {
+      const preset = COSMETIC_PRESETS[this.selectedCosmetic];
+      color = sampleSkinColor(this.canvas, preset?.bone === 'body' ? 'body' : 'head');
+    }
+    attachCosmeticToViewer(this.viewer, this.selectedCosmetic, {
+      color,
+      customJson: this.customBlockbenchJson
+    });
   }
 
   handleIconUpload(e) {
@@ -446,6 +572,7 @@ export class StandaloneAddonGenerator {
 
       if (this.viewer) {
         this.viewer.loadSkin(this.currentSkinBlobUrl);
+        this.updateCosmeticPreview();
       }
     }, 'image/png');
   }
@@ -594,6 +721,16 @@ export class StandaloneAddonGenerator {
         packIconData = await (await fetch(`${import.meta.env.BASE_URL}templates/packicon.png`)).blob();
       } catch (_) {}
 
+      // Check if custom cosmetic geometry needs to be compiled
+      let finalGeometryJson = this.customGeometryJson;
+      if (this.selectedCosmetic && this.selectedCosmetic !== 'none') {
+        finalGeometryJson = generateBedrockCosmeticGeometry(
+          this.selectedCosmetic,
+          this.modelType === 2,
+          this.customBlockbenchJson
+        );
+      }
+
       // 1. Generate In-Memory Addon via Headless Core Generator (CORE-001)
       const generated = await createStandaloneSkinAddon({
         addonName: this.addonName,
@@ -601,7 +738,7 @@ export class StandaloneAddonGenerator {
         addonVersion: this.addonVersion,
         itemSlotType: this.itemSlotType,
         modelType: this.modelType,
-        customGeometryJson: this.customGeometryJson,
+        customGeometryJson: finalGeometryJson,
         items,
         packIconData
       });

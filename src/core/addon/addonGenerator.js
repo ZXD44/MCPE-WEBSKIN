@@ -69,8 +69,11 @@ export async function createStandaloneSkinAddon(options) {
   // Determine geometry identifier
   let geometryIdentifier = 'geometry.humanoid.customSlim';
   if (modelType === 1) geometryIdentifier = 'geometry.humanoid.custom';
-  if (modelType === 3 && customGeometryJson) {
-    geometryIdentifier = customGeometryJson['minecraft:geometry'][0].description.identifier;
+  if (customGeometryJson) {
+    const geo = customGeometryJson['minecraft:geometry']?.[0] || customGeometryJson.geometry?.[0];
+    if (geo?.description?.identifier) {
+      geometryIdentifier = geo.description.identifier;
+    }
   }
 
   // 1. Behavior Pack Items
@@ -213,8 +216,8 @@ export async function createStandaloneSkinAddon(options) {
   zip.file(`${rpFolder}/manifest.json`, JSON.stringify(rpManifest, null, 2));
 
   // 6. Custom Geometry file if present
-  if (modelType === 3 && customGeometryJson) {
-    const geoFileName = geometryIdentifier.replace('geometry.', '') + '.json';
+  if (customGeometryJson) {
+    const geoFileName = geometryIdentifier.replace(/^geometry\./, '') + '.geo.json';
     zip.file(`${rpFolder}/models/entity/${geoFileName}`, JSON.stringify(customGeometryJson, null, 2));
   }
 

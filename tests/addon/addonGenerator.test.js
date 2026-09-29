@@ -100,4 +100,48 @@ describe('Addon Generator Core (Headless)', () => {
     const report = await validateAddonPackage(result.zip);
     expect(report.valid).toBe(true);
   });
+
+  it('generates addon with custom 3D cosmetic geometry correctly', async () => {
+    const fakePng = new Uint8Array([1, 2, 3, 4]);
+    const fakeCustomGeo = {
+      format_version: '1.12.0',
+      'minecraft:geometry': [
+        {
+          description: {
+            identifier: 'geometry.zirconx_cat_ears',
+            texture_width: 64,
+            texture_height: 64
+          },
+          bones: [{ name: 'head', pivot: [0, 24, 0] }]
+        }
+      ]
+    };
+
+    const result = await createStandaloneSkinAddon({
+      addonName: 'NekoGirl',
+      itemName: 'Neko Ears',
+      customGeometryJson: fakeCustomGeo,
+      items: [
+        {
+          id: 'skin_neko_001',
+          name: 'Neko Ears',
+          slot: 'slot.armor.head',
+          group: 'itemGroup.name.helmet',
+          skinData: fakePng,
+          iconData: fakePng,
+          isHead: true
+        }
+      ]
+    });
+
+    const geoFile = result.zip.file(`${result.rpFolder}/models/entity/zirconx_cat_ears.geo.json`);
+    expect(geoFile).not.toBeNull();
+
+    const attachableFile = result.zip.file(`${result.rpFolder}/attachables/skin_neko_001.json`);
+    const attachableJson = JSON.parse(await attachableFile.async('string'));
+    expect(attachableJson['minecraft:attachable'].description.geometry.default).toBe('geometry.zirconx_cat_ears');
+
+    const report = await validateAddonPackage(result.zip);
+    expect(report.valid).toBe(true);
+  });
 });

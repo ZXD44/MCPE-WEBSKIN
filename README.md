@@ -16,8 +16,15 @@
    - พรีเซ็ตด่วน 1 คลิก: `หัวลอย`, `ล่องหน 100%`, `ถอดแขนขา`, `แค่ตัว`, `ซ่อนหัว`, `ซ่อนตัว`
    - พรีวิว 3 มิติเรียลไทม์ และดาวน์โหลดไฟล์ภาพ `.png` นำไปใส่ในเกมได้ทันที
 
-2. **🦺 แอดออนสกินไอเทม (Standalone Addon Generator)**:
+2. **🦺 แอดออนสกินไอเทม & 3D เสริม (Standalone Addon & 3D Cosmetics)**:
    - แปลงสกินเป็นชุดเกราะสวมใส่ในเกม (ช่องหัว, ช่องตัว, ช่องขา, ช่องเท้า, หรือแยก 2 ชิ้น)
+   - **✨ อุปกรณ์ 3D เสริม (3D Cosmetics Studio)**:
+     - เพิ่มชิ้นส่วน 3D สำเร็จรูป: 🐱 **หูแมว 3D**, 🪽 **ปีกมังกร**, 🦊 **หางจิ้งจอก**, 👑 **มงกุฎลอย**, 🎒 **กระเป๋าเป้**
+     - เลือกระบบสีเอง หรือดูดสีสกินอัตโนมัติ (Auto-Color Sampling)
+     - เรนเดอร์ชิ้นส่วน 3D เคลื่อนไหวตามท่าทางเดิน/วิ่งบนเบราว์เซอร์สดๆ ด้วย Three.js
+   - **📁 Blockbench Bridge (.geo.json)**:
+     - นำเข้าโมเดล Bedrock Geometry ที่ออกแบบจากโปรแกรม Blockbench โดยตรง
+     - ผูกกระดูกและแปลงเป็นแอดออนสวมใส่ในเกมอัตโนมัติ 100% ไร้โค้ด JSON
    - **ระบบเจนไอคอนไอเทมตามรูปลักษณ์ช่องสวมใส่จริง (Slot-Based Item Icon)**:
      - ช่องหัว (`slot.armor.head`): เจนไอคอนเฉพาะส่วนหัว (+ ปอยผม/ลำตัวถ้าเปิดเรนเดอร์)
      - ช่องตัว (`slot.armor.chest`): เจนไอคอนเฉพาะเสื้อและแขน
@@ -41,6 +48,7 @@
 ## 🛡️ จุดเด่นด้านสถาปัตยกรรม (Architecture Highlights)
 
 - **Pure Client-Side 100%**: ปลอดภัย ไร้เซิร์ฟเวอร์ ไม่ส่งภาพสกินหรือโค้ดออกภายนอก จัดการไฟล์ ZIP ผ่าน `JSZip` ในหน่วยความจำทั้งหมด
+- **3D Cosmetics & Blockbench Engine**: ผสานโมเดล 3D และ Bedrock Geometry 1.12.0+ In-Memory พร้อมเรนเดอร์ชิ้นส่วน Cube บน Three.js
 - **Smart Alpha Inferrer & Outer Layer Masking**: ปลดล็อกแก้ปัญหาสกินไม่ตรงปกจากไฟล์ JPG หรือภาพแคปจอ โดยลบเฉพาะกล่องดำของเลเยอร์นอก (Hat, Jacket, Sleeves, Pants) ให้โปร่งใส และคงเลเยอร์ในไว้ครบถ้วน 100%
 - **Dominant Cluster Sampling**: ตรวจจับสีพื้นหลังแบบกลุ่มสีหลัก ทนทานต่อภาพแฟนอาร์ตที่มีแสงเงา แสงนีออน หรือ Noise จากการบีบอัดภาพ
 - **Universal Auto-Resampler**: ปรับขนาดสกินสี่เหลี่ยมจัตุรัสอิสระ (เช่น 1452x1452, 1254x1254, 800x800) ลงสู่ 64x64 มาตรฐาน Bedrock อัตโนมัติ
@@ -64,6 +72,7 @@ MCPE-WEBSKIN/
 ├── src/
 │   ├── core/                 # Headless Core Engine (Pure In-Memory, Zero DOM)
 │   │   ├── addon/            # ตัวสร้างแอดออนสกินสวมใส่ 1.21.10+
+│   │   ├── cosmetics/        # ตัวจัดการโมเดล 3D เสริม & Blockbench (.geo.json)
 │   │   ├── wardrobe/         # ตัวสร้างและแยกแพ็กเกจสกินแพ็ก (.mcpack)
 │   │   ├── skin/             # UV Coordinates, Smart Alpha Inferrer, Resampler
 │   │   ├── validator/        # ตรวจสอบ Manifest, UUID, Textures
@@ -71,7 +80,7 @@ MCPE-WEBSKIN/
 │   │   └── errors/           # ระบบ Error รวมศูนย์มาตรฐาน
 │   ├── modules/              # UI Controllers
 │   │   ├── hidepart.js       # ตัวควบคุมหน้าสกินล่องหน + 3D Canvas
-│   │   ├── standalone.js     # ตัวควบคุมหน้าแอดออนสกิน + Live Slot Icon Preview
+│   │   ├── standalone.js     # ตัวควบคุมหน้าแอดออนสกิน + 3D Cosmetics + Blockbench
 │   │   ├── wardrobe.js       # ตัวควบคุมหน้าสกินแพ็ก + 3D Live Inspect Modal
 │   │   ├── zip.js            # ตัวแตกและอ่านไฟล์ ZIP/MCPACK/MCADDON
 │   │   ├── sfx.js            # ระบบเสียงสังเคราะห์ Minecraft (Web Audio API)
@@ -81,7 +90,7 @@ MCPE-WEBSKIN/
 │   ├── types/                # TypeScript Type Definitions
 │   ├── main.js               # Router, Drag&Drop, Paste, PWA Lifecycle
 │   └── style.css             # Main CSS Master Importer
-├── tests/                    # Vitest Automated Test Suite (36 Tests / 8 Suites)
+├── tests/                    # Vitest Automated Test Suite (43 Tests / 9 Suites)
 ├── index.html                # Main Application Shell
 ├── tsconfig.json             # TypeScript Compiler Options
 ├── vite.config.js            # Vite Configuration

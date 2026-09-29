@@ -334,9 +334,12 @@
                   </svg>
                 </div>
                 <div class="mc-tool-card-info">
-                  <span class="mc-tool-num">TOOL 02</span>
-                  <h3 class="mc-tool-name">แอดออนสกินไอเทม</h3>
-                  <p class="mc-tool-desc">แปลงภาพสกินเป็นชุดเกราะสวมใส่ในเกม รองรับวิกผมยาว</p>
+                  <div style="display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.2rem;">
+                    <span class="mc-tool-num">TOOL 02</span>
+                    <span class="mc-tag gold" style="font-size: 0.6rem; padding: 0.08rem 0.35rem;">3D COSMETICS</span>
+                  </div>
+                  <h3 class="mc-tool-name">แอดออนสกิน & 3D เสริม</h3>
+                  <p class="mc-tool-desc">สกินเกราะสวมใส่ + ของแต่ง 3D (หูแมว, ปีก, หาง, เป้) หรือ Blockbench</p>
                 </div>
               </div>
               <button class="mc-tool-btn" data-goto="standalone">
@@ -651,6 +654,104 @@
             </p>
           </div>
 
+          <!-- 3D Cosmetics & Modular Accessories Section -->
+          <div class="form-box cosmetic-box">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.2rem; flex-wrap: wrap; gap: 0.3rem;">
+              <label class="form-label" style="margin-bottom: 0; display: flex; align-items: center; gap: 0.4rem;">
+                <span>✨ อุปกรณ์ 3D เสริม (3D Cosmetics & Blockbench)</span>
+                <span class="mc-tag gold" style="font-size: 0.6rem; padding: 0.08rem 0.35rem;">ใหม่</span>
+              </label>
+              <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted);">เลือกตกแต่งหรือนำเข้า .geo.json</span>
+            </div>
+
+            <!-- Cosmetic Selector Grid -->
+            <div class="cosmetic-grid">
+              <button type="button" class="cosmetic-card active" data-cosmetic="none">
+                <div class="cosmetic-card-icon">❌</div>
+                <div class="cosmetic-card-title">ไม่มี</div>
+                <div class="cosmetic-card-sub">สกินปกติ</div>
+              </button>
+              
+              <button type="button" class="cosmetic-card" data-cosmetic="cat_ears">
+                <div class="cosmetic-card-icon">🐱</div>
+                <div class="cosmetic-card-title">หูแมว 3D</div>
+                <div class="cosmetic-card-sub">ติดบนศีรษะ</div>
+              </button>
+              
+              <button type="button" class="cosmetic-card" data-cosmetic="dragon_wings">
+                <div class="cosmetic-card-icon">🪽</div>
+                <div class="cosmetic-card-title">ปีกมังกร</div>
+                <div class="cosmetic-card-sub">กางกลางหลัง</div>
+              </button>
+              
+              <button type="button" class="cosmetic-card" data-cosmetic="fox_tail">
+                <div class="cosmetic-card-icon">🦊</div>
+                <div class="cosmetic-card-title">หางจิ้งจอก</div>
+                <div class="cosmetic-card-sub">แกว่งตามตัว</div>
+              </button>
+              
+              <button type="button" class="cosmetic-card" data-cosmetic="crown">
+                <div class="cosmetic-card-icon">👑</div>
+                <div class="cosmetic-card-title">มงกุฎ 3D</div>
+                <div class="cosmetic-card-sub">ทองคำลอย</div>
+              </button>
+              
+              <button type="button" class="cosmetic-card" data-cosmetic="backpack">
+                <div class="cosmetic-card-icon">🎒</div>
+                <div class="cosmetic-card-title">กระเป๋าเป้</div>
+                <div class="cosmetic-card-sub">สะพายหลัง</div>
+              </button>
+
+              <button type="button" class="cosmetic-card" data-cosmetic="custom">
+                <div class="cosmetic-card-icon">📁</div>
+                <div class="cosmetic-card-title">Blockbench</div>
+                <div class="cosmetic-card-sub">.geo.json</div>
+              </button>
+            </div>
+
+            <!-- Color Tint Options Panel -->
+            <div id="cosmetic-options-panel" class="cosmetic-options" style="display: none;">
+              <span class="cosmetic-option-label">โทนสี 3D:</span>
+              <div class="cosmetic-color-row">
+                <button type="button" class="cosmetic-color-btn active" data-color="auto" title="สีตามสกินอัตโนมัติ">✨ ออโต้</button>
+                <button type="button" class="cosmetic-color-btn" data-color="#ff758c" style="--c: #ff758c;" title="ชมพูพาสเทล"></button>
+                <button type="button" class="cosmetic-color-btn" data-color="#f59e0b" style="--c: #f59e0b;" title="ส้มจิ้งจอก / ทอง"></button>
+                <button type="button" class="cosmetic-color-btn" data-color="#ef4444" style="--c: #ef4444;" title="แดงเข้ม"></button>
+                <button type="button" class="cosmetic-color-btn" data-color="#38bdf8" style="--c: #38bdf8;" title="ฟ้าคราม"></button>
+                <button type="button" class="cosmetic-color-btn" data-color="#1e2029" style="--c: #1e2029;" title="ดำด้าน"></button>
+                <button type="button" class="cosmetic-color-btn" data-color="#ffffff" style="--c: #ffffff;" title="ขาวหิมะ"></button>
+                <input type="color" id="cosmetic-custom-color" class="cosmetic-color-picker" value="#ff758c" title="เลือกสีอิสระ">
+              </div>
+            </div>
+
+            <!-- Blockbench Custom Geo Upload Panel -->
+            <div id="blockbench-upload-panel" class="blockbench-panel" style="display: none;">
+              <div class="blockbench-dropzone" id="blockbench-dropzone" onclick="document.getElementById('blockbench-geo-input').click()">
+                <div class="blockbench-dropzone-icon">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                  </svg>
+                </div>
+                <div class="blockbench-dropzone-text">เลือกหรือลากวางไฟล์ .geo.json</div>
+                <div class="blockbench-dropzone-sub">โมเดล Bedrock Geometry ที่ Export จาก Blockbench</div>
+              </div>
+              <input type="file" id="blockbench-geo-input" accept=".json,.geo.json" style="display: none;">
+
+              <div id="blockbench-file-info" class="blockbench-info-card" style="display: none;">
+                <div class="blockbench-info-icon">📦</div>
+                <div class="blockbench-info-details">
+                  <div id="blockbench-model-name" class="blockbench-info-name">geometry.custom</div>
+                  <div id="blockbench-model-meta" class="blockbench-info-meta">0 กระดูก • 0 กล่อง</div>
+                </div>
+                <button type="button" id="blockbench-remove-btn" class="mc-icon-btn" title="ลบโมเดล">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Model Picker -->
           <div class="form-box">
             <label class="form-label">ประเภทโมเดล</label>
@@ -898,6 +999,16 @@
                 </div>
               </div>
             </div>
+
+            <div class="guide-step-card">
+              <div class="guide-step-num">3</div>
+              <div class="guide-step-content">
+                <div class="guide-step-title">ของแต่ง 3D & โมเดล Blockbench (.geo.json)</div>
+                <div class="guide-step-desc">
+                  สามารถเลือกใส่ของแต่ง 3D สำเร็จรูป (หูแมว, ปีกมังกร, หางจิ้งจอก, มงกุฎ, เป้) หรือนำเข้าไฟล์ <strong>.geo.json</strong> จาก Blockbench ระบบจะผูกกระดูกและแพ็กไฟล์ Geometry ลงในแอดออนให้อัตโนมัติ สวมใส่ในเกมแล้วโมเดลจะยื่นนูน 3D ออกมาทันที
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 2. สกินตรงปก & ข้อแนะนำ (Tips Panel) -->
@@ -952,7 +1063,20 @@
               <div class="changelog-header">
                 <div class="changelog-ver">
                   <span class="changelog-ver-title">ZIRCONX STUDIO</span>
-                  <span class="changelog-badge">v1.4.0 ล่าสุด</span>
+                  <span class="changelog-badge">v1.5.0 ล่าสุด</span>
+                </div>
+                <span class="changelog-date">29 ก.ย. 2026</span>
+              </div>
+              <ul class="changelog-list">
+                <li><strong>3D Cosmetics & Modular Accessories Studio:</strong> เพิ่มระบบของแต่งตัว 3D สำเร็จรูป (หูแมว 3D, ปีกมังกร, หางจิ้งจอก, มงกุฎลอย, กระเป๋าเป้) ติดตั้งเข้ากับตัวละครพร้อมระบบเลือกโทนสี หรือปรับสีตามสกินอัตโนมัติ (Auto-Color)</li>
+                <li><strong>Blockbench Bridge (.geo.json):</strong> ปลดล็อกให้นำเข้าไฟล์โมเดล Bedrock Geometry ที่ออกแบบจากโปรแกรม Blockbench โดยตรง แปลงเป็นแอดออนสวมใส่ในเกมอัตโนมัติ 100% โดยไม่ต้องเขียนโค้ด JSON</li>
+                <li><strong>Real-time 3D Attachment Engine:</strong> ชิ้นส่วน 3D เคลื่อนไหวตามท่าทางเดิน/วิ่งของตัวละครบนเบราว์เซอร์สดๆ ด้วย Three.js</li>
+              </ul>
+
+              <div class="changelog-header" style="margin-top: 1rem;">
+                <div class="changelog-ver">
+                  <span class="changelog-ver-title">ZIRCONX STUDIO</span>
+                  <span class="changelog-badge" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border-color: rgba(148, 163, 184, 0.35);">v1.4.0</span>
                 </div>
                 <span class="changelog-date">29 ก.ย. 2026</span>
               </div>
